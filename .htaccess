@@ -1,0 +1,18 @@
+<ifModule mod_deflate.c>
+#    AddOutputFilterByType DEFLATE text/html text/plain text/xml application/xml application/xhtml+xml text/css text/javascript application/javascript application/x-javascript
+</ifModule>
+AddDefaultCharset UTF-8
+
+#AuthType Basic
+#AuthName "Pivate zone"
+#AuthUserFile /home/aggardo/data/www/soap-unit-tests.aggardo.ru/.htpasswd
+#require valid-user
+
+RewriteEngine on
+
+RewriteRule ^index.php/(.*) /$1 [R=301,L]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . index.php
+
