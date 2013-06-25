@@ -70,17 +70,22 @@ class SoapTest extends CActiveRecord
 
 	public function getSuccessCount()
 	{
-		return $this->getStatsTest()['success'];
+        $a = $this->getStatsTest();
+		return $a['success'];
 	}
 
 	public function getWarningCount()
 	{
-		return $this->getStatsTest()['warning'];
+        $a = $this->getStatsTest();
+        return $a['warning'];
+//		return $this->getStatsTest()['warning'];
 	}
 
 	public function getErrorCount()
 	{
-		return $this->getStatsTest()['error'];
+        $a = $this->getStatsTest();
+        return $a['error'];
+//		return $this->getStatsTest()['error'];
 	}
 
 	/**
@@ -198,6 +203,23 @@ class SoapTest extends CActiveRecord
 		}
 	}
 
+    private function isAvailableService(){
+        //проверка на доступность сервиса
+        $url = $this->service->url;
+        if ($this->service->login) {
+            $urlParr = parse_url($url);
+            $url = $urlParr['scheme'].'://'.
+                $this->service->login.
+                ($this->service->password ? ':'.$this->service->password : '').
+                '@'.$urlParr['host'].
+                (isset($urlParr['port']) ? $urlParr['port'] : '').
+                (isset($urlParr['path']) ? $urlParr['path'] : '').
+                (isset($urlParr['query']) ? '?'.$urlParr['query'] : '');
+        }
+        $result = @file_get_contents($url);
+        return (bool)$result;
+    }
+
 	/**
 	 * @throws CHttpException
 	 */
@@ -210,20 +232,20 @@ class SoapTest extends CActiveRecord
 			$this->status = 2;
 			$this->save();
 
-			//проверка на доступность сервиса
-			$url = $this->service->url;
-			if ($this->service->login) {
-				$urlParr = parse_url($url);
-				$url = $urlParr['scheme'].'://'.
-					$this->service->login.
-					($this->service->password ? ':'.$this->service->password : '').
-					'@'.$urlParr['host'].
-					(isset($urlParr['port']) ? $urlParr['port'] : '').
-					(isset($urlParr['path']) ? $urlParr['path'] : '').
-					(isset($urlParr['query']) ? '?'.$urlParr['query'] : '');
-			}
-			$result = @file_get_contents($url);
-			if (!$result) {
+//			//проверка на доступность сервиса
+//			$url = $this->service->url;
+//			if ($this->service->login) {
+//				$urlParr = parse_url($url);
+//				$url = $urlParr['scheme'].'://'.
+//					$this->service->login.
+//					($this->service->password ? ':'.$this->service->password : '').
+//					'@'.$urlParr['host'].
+//					(isset($urlParr['port']) ? $urlParr['port'] : '').
+//					(isset($urlParr['path']) ? $urlParr['path'] : '').
+//					(isset($urlParr['query']) ? '?'.$urlParr['query'] : '');
+//			}
+//			$result = @file_get_contents($url);
+			if (!$this->isAvailableService()) {
 				throw new CException('Ошибка соедиения с сервисом ('.$this->service->url.')');
 			}
 

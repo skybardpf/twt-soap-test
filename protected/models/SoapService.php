@@ -156,30 +156,43 @@ class SoapService extends CActiveRecord
 
 	public function isSoapServiceUrl($attribute, $params = array())
 	{
-		$url = $this->url;
-		if ($this->login) {
-			$urlParr = parse_url($url);
-			$url = $urlParr['scheme'].'://'.
-					$this->login.
-					($this->password ? ':'.$this->password : '').
-					'@'.$urlParr['host'].
-					(isset($urlParr['port']) ? $urlParr['port'] : '').
-					(isset($urlParr['path']) ? $urlParr['path'] : '').
-					(isset($urlParr['query']) ? '?'.$urlParr['query'] : '');
-		}
-		$result = @file_get_contents($url);
-		if (!$result) {
+		if (!$this->isAvailableService()) {
 			$this->addError($attribute, 'Не удается связаться с сервером');
 			return;
 		}
-		try {
-			ini_set('soap.wsdl_cache_enabled', 0);
-			$this->_soapClient = new SoapClient($this->url, array(
-				'login' => $this->login,
-				'password' => $this->password
-			));
-		} catch (SoapFault $e) {
+		if (!$this->getSoapClient()){
 			$this->addError($attribute, 'Не является WSDL сервисом');
 		}
 	}
+
+    public function isAvailableService(){
+        //проверка на доступность сервиса
+        $url = $this->url;
+        if ($this->login) {
+            $urlParr = parse_url($url);
+            $url = $urlParr['scheme'].'://'.
+                $this->login.
+                ($this->password ? ':'.$this->password : '').
+                '@'.$urlParr['host'].
+                (isset($urlParr['port']) ? $urlParr['port'] : '').
+                (isset($urlParr['path']) ? $urlParr['path'] : '').
+                (isset($urlParr['query']) ? '?'.$urlParr['query'] : '');
+        }
+        $result = @file_get_contents($url);
+        return (bool)$result;
+    }
+
+    public function getSoapClient(){
+        $client = NULL;
+        try {
+            ini_set('soap.wsdl_cache_enabled', 0);
+            $client = $this->_soapClient = new SoapClient($this->url, array(
+                'login'     => $this->login,
+                'password'  => $this->password
+            ));
+        } catch (SoapFault $e) {
+//            $client = false;
+        }
+        return $client;
+    }
 }
