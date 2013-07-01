@@ -18,6 +18,7 @@ return array(
 	'import'=>array(
 		'application.models.*',
 		'application.components.*',
+		'application.commands.*',
 	),
 
 	'modules'=>array(
@@ -33,6 +34,10 @@ return array(
 
 	// application components
 	'components'=>array(
+//        'tests_actions'=>array(
+//            'class'=>'ext.tests_actions.CreateAction'
+//        ),
+
 		'bootstrap'=>array(
 			'class'=>'bootstrap.components.Bootstrap',
 		),
@@ -66,6 +71,12 @@ return array(
 
 			),
 		),
+
+//        'clientScript' => array(
+//            'scriptMap' => array(
+//                'jquery.js' => false,
+//            )
+//        ),
 
 		'urlManager'=>array(
 			'urlFormat'=>'path',
