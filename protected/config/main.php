@@ -1,5 +1,7 @@
 <?php
 
+//var_dump(realpath(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'));die;
+
 Yii::setPathOfAlias('bootstrap', dirname(__FILE__).'/../extensions/bootstrap');
 mb_internal_encoding('UTF-8');
 // This is the main Web application configuration. Any writable
@@ -72,11 +74,12 @@ return array(
 			),
 		),
 
-//        'clientScript' => array(
-//            'scriptMap' => array(
-//                'jquery.js' => false,
-//            )
-//        ),
+        'clientScript' => array(
+            'scriptMap' => array(
+                'jquery.js'     => 'http://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.js',
+                'jquery.min.js' => 'http://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js',
+            )
+        ),
 
 		'urlManager'=>array(
 			'urlFormat'=>'path',

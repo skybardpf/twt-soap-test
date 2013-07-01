@@ -15,13 +15,13 @@ $this->pageTitle = 'Отчет по тесту №'.$test->id.' сервиса �
 <h2><?=$this->pageTitle?></h2>
 
 <?php
-if ($test->status != 4):
-	Yii::app()->clientScript->registerMetaTag('10', null, 'refresh');
+//if ($test->status != 4):
+//	Yii::app()->clientScript->registerMetaTag('10', null, 'refresh');
 ?>
 	<div class="alert alert-info">
 		Окно обновляется автоматически раз в 10 секунд, пока тест не завершится.
 	</div>
-<?php endif ?>
+<?php //endif ?>
 
 <table class="table table-striped table-hover table-condensed">
 	<tr>

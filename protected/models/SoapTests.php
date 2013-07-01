@@ -60,6 +60,7 @@ class SoapTests extends CActiveRecord {
                 if (!$return){
                     throw new CSoapTestsException('Не получен результат функции.', self::STATUS_NOT_RETURN_RESULT);
                 }
+//                var_dump($return);die;
                 $return = (isset($return->return)) ? $return->return : '';
 
 //                if ($fa->return != json_encode($return, JSON_UNESCAPED_UNICODE)) {
@@ -70,6 +71,7 @@ class SoapTests extends CActiveRecord {
 //                    $test_result->result = 0;
 //                }
             } catch (SoapFault $e) {
+                $return = $e->getMessage();
                 throw new CSoapTestsException('Не удалось вызвать функцию.', self::STATUS_NOT_CALL_FUNCTION);
             }
 
@@ -272,25 +274,8 @@ class SoapTests extends CActiveRecord {
         return $this;
     }
 
-    public function trueArgs($attribute, $params = array())
+    public function trueArgs($attribute)
     {
-//        try {
-//            ini_set('soap.wsdl_cache_enabled', 0);
-//            $soapClient = new SoapClient($this->function->service->url, array(
-//                'login' => $this->function->service->login,
-//                'password' => $this->function->service->password
-//            ));
-//            $return = $soapClient->__soapCall($this->function->name, (array) json_decode($this->args, true));
-//            $this->return = json_encode($return, JSON_UNESCAPED_UNICODE);
-//        } catch (SoapFault $e) {
-//
-//        }
-//
-
-
-//            var_dump($attribute, $params);
-//        die;
-
         if (is_null(CJSON::decode($this->$attribute))){
             $this->addError($attribute, 'Не правильно заданы аргументы ('.$this->$attribute.')');
         }
@@ -304,10 +289,8 @@ class SoapTests extends CActiveRecord {
         // NOTE: you may need to adjust the relation name and the related
         // class name for the relations automatically generated below.
         return array(
-//            'soapTestResults' => array(self::HAS_MANY, 'SoapTestResult', 'test_id'),
-            'service' => array(self::BELONGS_TO, 'SoapService', 'service_id'),
-            'function' => array(self::BELONGS_TO, 'SoapFunction', 'function_id'),
-//            'function_args' => array(self::BELONGS_TO, 'SoapFunctionArgs', 'function_args_id'),
+            'service'   => array(self::BELONGS_TO, 'SoapService', 'service_id'),
+            'function'  => array(self::BELONGS_TO, 'SoapFunction', 'function_id'),
         );
     }
 
@@ -321,11 +304,6 @@ class SoapTests extends CActiveRecord {
         return array(
             array('name, args', 'required'),
             array('args', 'trueArgs'),
-//            array('function_id', 'numerical', 'integerOnly'=>true),
-//            array('return', 'safe'),
-            // The following rule is used by search().
-            // Please remove those attributes that should not be searched.
-//            array('id, function_id, name, args, return', 'safe', 'on'=>'search'),
         );
     }
 

@@ -3,8 +3,10 @@
  * @var $this                   ArgumentsController
  * @var $function               SoapFunction
  * @var $data                   CActiveDataProvider
- * @var int     $count_running_tests
+ * @var int                     $count_running_tests
  */
+
+Yii::app()->getClientScript()->registerCoreScript('jquery');
 
 $this->breadcrumbs=array(
 	'Сервисы'=>array('/servers'),

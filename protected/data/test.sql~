@@ -1,0 +1,1 @@
+SELECT f.id, f.name, t.count, t.worked, t.dstart FROM soap_function f, (	SELECT f.id, COUNT(t.id) AS `count`, SUM(CASE t.status WHEN 1 THEN 1 ELSE 0 END)) AS `worked`,  MIN(t.date_start) AS `dstart`	FROM soap_function f	LEFT JOIN soap_tests t ON t.function_id=f.id	WHERE t.status=1) tWHERE f.id = t.id;
