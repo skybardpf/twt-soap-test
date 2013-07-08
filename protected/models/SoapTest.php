@@ -1,305 +1,439 @@
 <?php
+class CSoapTestException extends CException {}
 
 /**
- * This is the model class for table "soap_test".
+ *  Модель для проведения тестов. Тест принадлежит определенной функции SOAP сервиса.
  *
- * The followings are the available columns in table 'soap_test':
- * @property integer $id
- * @property integer $service_id
- * @property integer $date_create
- * @property integer $date_start
- * @property integer $date_end
- * @property integer $status
- * @property array $statusTitle
- * @property array $statsTest
- * @property integer $successCount
- * @property integer $errorCount
- * @property integer $warningCount
+ *  @author Skibardin A.A. <skybardpf@artektiv.ru>
  *
- * The followings are the available model relations:
- * @property SoapTestResult[] $soapTestResults
- * @property SoapService $service
+ *  @see SoapFunction
+ *  @see SoapService
+ *
+ *  @property $id           int
+ *  @property $name         string
+ *  @property $function_id  int
+ *  @property $date_create  int timestamp
+ *  @property $date_start   int timestamp
+ *  @property $date_end     int timestamp
+ *  @property $status       int
+ *  @property $test_result  int
+ *  @property $args         string
+ *  @property $last_return  string
+ *  @property $soapFunction SoapFunction
  */
-class SoapTest extends CActiveRecord
-{
-	public $status = 1;
+class SoapTest extends CActiveRecord {
+    const STATUS_TEST_STOP          = 1;
+    const STATUS_TEST_IN_QUEUE      = 2;
+    const STATUS_TEST_RUN           = 3;
 
-	private $_statsTest = null;
+    const TEST_RESULT_OK            = 1;
+    const TEST_RESULT_NOT_EXECUTED  = 2;
+    const TEST_RESULT_ERROR         = 3;
 
-	public $statuses = array(
-		'0' => '—',
-		'1' => 'В очереди',
-		'2' => 'В работе',
-		'3' => 'Ошибка, ждет в очереди нового запуска',
-		'4' => 'Отработал'
-	);
-
-	public function getStatusTitle()
-	{
-		return $this->statuses[$this->status];
-	}
-
-	public function getTestsCount()
-	{
-		return count($this->soapTestResults);
-	}
-
-	/**
-	 * @return array
-	 */
-	public function getStatsTest()
-	{
-		if ($this->_statsTest == null) {
-			$this->_statsTest = $this->getDbConnection()->createCommand(
-				'SELECT
-					SUM(error) AS error, SUM(warning) AS warning, SUM(success) AS success
-				FROM (
-					SELECT
-						CASE WHEN (result = -1) THEN 1 END AS error,
-						CASE WHEN (result = 0) THEN 1 END AS warning,
-						CASE WHEN (result = 1) THEN 1 END AS success
-					FROM
-						soap_test_result
-					WHERE
-						test_id = :test_id
-				)'
-			)->queryRow(true, array(':test_id' => $this->id));
-		}
-		return $this->_statsTest;
-	}
-
-	public function getSuccessCount()
-	{
-        $a = $this->getStatsTest();
-		return $a['success'];
-	}
-
-	public function getWarningCount()
-	{
-        $a = $this->getStatsTest();
-        return $a['warning'];
-//		return $this->getStatsTest()['warning'];
-	}
-
-	public function getErrorCount()
-	{
-        $a = $this->getStatsTest();
-        return $a['error'];
-//		return $this->getStatsTest()['error'];
-	}
-
-	/**
-	 * Returns the static model of the specified AR class.
-	 * @param string $className active record class name.
-	 * @return SoapTest the static model class
-	 */
-	public static function model($className=__CLASS__)
-	{
-		return parent::model($className);
-	}
-
-	/**
-	 * @param $id
-	 * @return SoapTest
-	 */
-	public function service($id)
-	{
-		$this->getDbCriteria()->mergeWith(array(
-			'condition'=>'service_id = :service_id',
-			'params'=>array(':service_id' => $id),
-		));
-		return $this;
-	}
-
-	/**
-	 * @return string the associated database table name
-	 */
-	public function tableName()
-	{
-		return 'soap_test';
-	}
-
-	/**
-	 * @return array validation rules for model attributes.
-	 */
-	public function rules()
-	{
-		// NOTE: you should only define rules for those attributes that
-		// will receive user inputs.
-		return array(
-			array('service_id, status', 'required'),
-			array('service_id', 'numerical', 'integerOnly'=>true),
-			array('service_id', 'inQueue'),
-			// The following rule is used by search().
-			// Please remove those attributes that should not be searched.
-			array('id, service_id', 'safe', 'on'=>'search'),
-		);
-	}
-
-	/**
-	 * @return array relational rules.
-	 */
-	public function relations()
-	{
-		// NOTE: you may need to adjust the relation name and the related
-		// class name for the relations automatically generated below.
-		return array(
-			'soapTestResults' => array(self::HAS_MANY, 'SoapTestResult', 'test_id'),
-			'service' => array(self::BELONGS_TO, 'SoapService', 'service_id'),
-		);
-	}
-
-	/**
-	 * @return array customized attribute labels (name=>label)
-	 */
-	public function attributeLabels()
-	{
-		return array(
-			'id' => 'ID',
-			'service_id' => 'Сервис',
-			'date_create' => 'Дата создания',
-			'date_start' => 'Дата старта',
-			'date_end' => 'Дата окончания',
-			'status' => 'Статус',
-			'statusTitle' => 'Статус',
-			'testsCount' => 'Выполненно тестов',
-			'successCount' => 'Пройдено',
-			'warningCount' => 'Не точно',
-			'errorCount' => 'Ошибка',
-		);
-	}
-
-	/**
-	 * Retrieves a list of models based on the current search/filter conditions.
-	 * @return CActiveDataProvider the data provider that can return the models based on the search/filter conditions.
-	 */
-	public function search()
-	{
-		// Warning: Please modify the following code to remove attributes that
-		// should not be searched.
-
-		$criteria=new CDbCriteria;
-
-		$criteria->compare('id',$this->id);
-		$criteria->compare('service_id',$this->service_id);
-
-		return new CActiveDataProvider($this, array(
-			'criteria'=>$criteria,
-		));
-	}
-
-	protected function beforeSave()
-	{
-		if ($this->isNewRecord) {
-			$this->date_create = time();
-		}
-		return parent::beforeSave();
-	}
-
-	public function inQueue($attribute, $params = array())
-	{
-		if ($this->isNewRecord && self::model()->countByAttributes(array('service_id' => $this->service_id, 'status' => 1))) {
-			$this->addError($attribute, 'Сервис уже в очереди на тестирование. Дождитесь завершения.');
-		}
-	}
-
-    private function isAvailableService(){
-        //проверка на доступность сервиса
-        $url = $this->service->url;
-        if ($this->service->login) {
-            $urlParr = parse_url($url);
-            $url = $urlParr['scheme'].'://'.
-                $this->service->login.
-                ($this->service->password ? ':'.$this->service->password : '').
-                '@'.$urlParr['host'].
-                (isset($urlParr['port']) ? $urlParr['port'] : '').
-                (isset($urlParr['path']) ? $urlParr['path'] : '').
-                (isset($urlParr['query']) ? '?'.$urlParr['query'] : '');
-        }
-        $result = @file_get_contents($url);
-        return (bool)$result;
+    /**
+     * Возвращает список тестов для определенной функции.
+     *
+     * @static
+     * @param int $func_id
+     * @return SoapTest[]
+     */
+    public static function getList($func_id)
+    {
+        $cmd = Yii::app()->db->createCommand('
+            SELECT
+                id,
+                name,
+                function_id,
+                date_start,
+                status,
+                ( CASE test_result
+                    WHEN '.self::TEST_RESULT_ERROR.' OR '.self::TEST_RESULT_OK.'
+                    THEN( date_end - date_start )
+                    ELSE 0
+                    END
+                ) AS `runtime`,
+                test_result,
+                last_return,
+                args
+            FROM '.self::model()->tableName().'
+            WHERE function_id = :function_id'
+        );
+        return $cmd->queryAll(true, array(
+            ":function_id" => $func_id
+        ));
     }
 
-	/**
-	 * @throws CHttpException
-	 */
-	public function runTests()
-	{
-		try {
-			if ($this->status == 1) {
-				$this->date_start = time();
-			}
-			$this->status = 2;
-			$this->save();
+    /**
+     * Возвращает текущие статусы тестов. Список тестов передается в виде
+     * массива ID.
+     *
+     * @static
+     * @param array $listIds
+     * @return array
+     */
+    public static function getStatusesTests(array $listIds)
+    {
+        if (empty($listIds)){
+            return array();
+        }
+        $cmd = Yii::app()->db->createCommand('
+            SELECT
+                id,
+                date_start,
+                status,
+                ( CASE test_result
+                    WHEN '.self::TEST_RESULT_ERROR.' OR '.self::TEST_RESULT_OK.'
+                    THEN( date_end - date_start )
+                    ELSE 0
+                    END
+                ) AS `runtime`,
+                test_result,
+                last_return
+            FROM '.self::model()->tableName().'
+            WHERE id IN ('.implode(',', $listIds).') AND status=:status'
 
-//			//проверка на доступность сервиса
-//			$url = $this->service->url;
-//			if ($this->service->login) {
-//				$urlParr = parse_url($url);
-//				$url = $urlParr['scheme'].'://'.
-//					$this->service->login.
-//					($this->service->password ? ':'.$this->service->password : '').
-//					'@'.$urlParr['host'].
-//					(isset($urlParr['port']) ? $urlParr['port'] : '').
-//					(isset($urlParr['path']) ? $urlParr['path'] : '').
-//					(isset($urlParr['query']) ? '?'.$urlParr['query'] : '');
-//			}
-//			$result = @file_get_contents($url);
-			if (!$this->isAvailableService()) {
-				throw new CException('Ошибка соедиения с сервисом ('.$this->service->url.')');
-			}
+        );
+        return $cmd->queryAll(true,
+            array(
+                ":status" => SoapTest::STATUS_TEST_STOP
+            )
+        );
+    }
 
-			//соединение с сервисом
-			$soapClient = null;
-			ini_set('soap.wsdl_cache_enabled', 0);
-			try {
-				$soapClient = new SoapClient($this->service->url, array(
-					'login' => $this->service->login,
-					'password' => $this->service->password
-				));
-				Yii::trace('Соединение с '.$this->service->url);
-			} catch (SoapFault $e) {
-				throw new CException('Ошибка соедиения с сервисом ('.$e->getMessage().')');
-			}
+    /**
+     * Возвращает список ID запущенных тестов для определенной функции.
+     *
+     * @static
+     * @param int $func_id
+     * @return array
+     */
+    public static function getRunningTests($func_id)
+    {
+        $cmd = Yii::app()->db->createCommand('
+            SELECT id
+            FROM '.self::model()->tableName().'
+            WHERE function_id=:function_id AND status=:status');
+        $data = $cmd->queryAll(true,
+            array(
+                ":function_id"  => $func_id,
+                ":status"       => SoapTest::STATUS_TEST_RUN
+            )
+        );
 
-			/** @var $args SoapFunctionArgs[] */
-			$args = SoapFunctionArgs::model()->findAllBySql(
-				'SELECT sfa.* FROM '.SoapFunctionArgs::model()->tableName().' AS sfa
-				JOIN '.SoapFunction::model()->tableName().' AS sf ON sfa.function_id = sf.id
-				WHERE sfa.id NOT IN (
-					SELECT str.function_args_id
-					FROM '.SoapTestResult::model()->tableName().' AS str
-					WHERE str.test_id = :test_id
-				) AND sf.service_id = :service_id', array(':test_id'=>$this->id, ':service_id' => $this->service_id)
-			);
-			foreach ($args as $fa) {
-				$test_result = new SoapTestResult();
-				$test_result->function_args_id = $fa->id;
-				$test_result->test_id = $this->id;
-				$test_result->date = time();
-				try {
-					$return = $soapClient->__soapCall($fa->function->name, (array) json_decode($fa->args, true));
-					if ($fa->return == json_encode($return, JSON_UNESCAPED_UNICODE)) {
-						Yii::trace('Удача');
-						$test_result->result = 1;
-					} else {
-						Yii::trace('Вернули, но с ошибкой');
-						$test_result->result = 0;
-					}
-				} catch (SoapFault $e) {
-					Yii::trace('Полный провал');
-					$test_result->result = -1;
-				}
-				$test_result->save();
-			}
+        $ret = array();
+        foreach ($data as $v){
+            $ret[] = $v['id'];
+        }
+        return $ret;
+    }
 
-			$this->refresh();
-			$this->date_end = time();
-			$this->status = 4;
-			$this->save();
-		} catch (Exception $e) {
-			$this->status = 3;
-			$this->save();
-		}
-	}
+    /**
+     * Запускаем Unit-тест на выполнение.
+     * @param bool $force Если TRUE, тест запускается даже, если он уже запущен.
+     * @return bool Если false, значит тест уже выполняется.
+     */
+    public function run($force = false)
+    {
+        if (!$force && $this->status == self::STATUS_TEST_RUN){
+            return false;
+        }
+
+        $test_result = self::TEST_RESULT_NOT_EXECUTED;
+        $this->date_start = time();
+        $this->date_end = NULL;
+        $this->status = self::STATUS_TEST_RUN;
+        $this->test_result = $test_result;
+        $this->save();
+
+        try {
+            if (!$this->soapFunction->soapService->isAvailableService()){
+                throw new CSoapTestException('SOAP сервис не доступен.');
+            }
+            $soapClient = $this->soapFunction->soapService->getSoapClient();
+            if (!$soapClient){
+                throw new CSoapTestException('Не является WSDL сервисом.');
+            }
+
+            try {
+                $return = $soapClient->__soapCall($this->soapFunction->name, (array)json_decode($this->args, true));
+                if (empty($return) || !isset($return->return) || empty($return->return) || !is_string($return->return)){
+                    throw new CSoapTestException('Не получен результат функции.');
+                }
+                if (stripos($return->return, 'error') !== false){
+                    throw new CSoapTestException($return->return);
+                }
+                $return = $return->return;
+
+            } catch (SoapFault $e) {
+                throw new CSoapTestException($e->getMessage());
+            }
+        } catch (CSoapTestException $e){
+            $return = $e->getMessage();
+            $test_result = self::TEST_RESULT_ERROR;
+        }
+
+        $this->last_return = $return;
+        $this->date_end = time();
+        $this->status = self::STATUS_TEST_STOP;
+        $this->test_result = ($test_result != self::TEST_RESULT_ERROR) ?  self::TEST_RESULT_OK : $test_result;
+        $this->save();
+
+        return true;
+    }
+
+    /**
+     * @param  int $errorId
+     * @param  int $status
+     * @return string
+     */
+    public static function getTestResultByText($errorId, $status = SoapTest::STATUS_TEST_STOP){
+        if ($status == SoapTest::STATUS_TEST_RUN){
+            $text = 'Выполняется';
+        } elseif ($errorId == SoapTest::TEST_RESULT_OK){
+            $text = 'Без ошибок';
+        } elseif ($errorId == SoapTest::TEST_RESULT_ERROR){
+            $text = 'Ошибка';
+        } else {
+            $text = 'Не выполнялось';
+        }
+        return $text;
+    }
+
+//    public function selectRunningFunctionTests($function_id)
+//    {
+//        $cmd = Yii::app()->db->createCommand(
+//            'UPDATE '.SoapTest::model()->tableName().'
+//            SET status=:status
+//            WHERE function_id=:function_id'
+//        );
+//        $cmd->execute(array(
+//            ":status"       => SoapTest::STATUS_TEST_RUN,
+//            ":function_id"  => $function_id
+//        ));
+//    }
+
+//    public function runTestFunction($function_id)
+//    {
+//        $cmd = Yii::app()->db->createCommand(
+//            'SELECT id
+//            FROM '.SoapTest::model()->tableName().'
+//            WHERE function_id=:function_id AND status=:status'
+//        );
+//        $tests = $cmd->queryAll(true, array(
+//            ":status"     => SoapTest::STATUS_TEST_RUN,
+//            ':function_id'=> $function_id
+//        ));
+//        foreach($tests as $t){
+//            $this->run($t['id']);
+//        }
+//
+//        $cmd = Yii::app()->db->createCommand(
+//            'SELECT
+//                SUM(CASE `status` WHEN :status THEN (date_end-date_start) ELSE 0 END) AS `runtime`,
+//                MIN(`date_start`) AS `date_start`,
+//                MAX(`test_result`) AS `test_result`
+//            FROM '.SoapTest::model()->tableName().'
+//            WHERE function_id=:function_id'
+//        );
+//        $res = $cmd->queryRow(true, array(
+//            ":status"     => SoapTest::STATUS_TEST_STOP,
+//            ':function_id'=> $function_id
+//        ));
+//        return $res;
+//    }
+
+//    public function runTestFunction2($function_id)
+//    {
+//        $cmd = Yii::app()->db->createCommand(
+//            'SELECT id
+//            FROM '.SoapTest::model()->tableName().'
+//            WHERE function_id=:function_id AND status=:status'
+//        );
+//        $tests = $cmd->queryAll(true, array(
+//            ":status"     => SoapTest::STATUS_TEST_RUN,
+//            ':function_id'=> $function_id
+//        ));
+//        foreach($tests as $t){
+//            $this->run($t['id']);
+//        }
+//
+//        $cmd = Yii::app()->db->createCommand(
+//            'SELECT
+//                id as `test_id`,
+//                `last_return`,
+//                `status`,
+//                (CASE `status` WHEN :status THEN (date_end-date_start) ELSE 0 END) AS `runtime`,
+//                `date_start`,
+//                `test_result`
+//            FROM '.SoapTest::model()->tableName().'
+//            WHERE function_id=:function_id'
+//        );
+//        $res = $cmd->queryAll(true, array(
+//            ":status"       => SoapTest::STATUS_TEST_STOP,
+//            ':function_id'  => $function_id
+//        ));
+//        return $res;
+//    }
+//
+//    public function runTest($test_id)
+//    {
+//        $this->run($test_id);
+//
+//        $cmd = Yii::app()->db->createCommand(
+//            'SELECT
+//                `last_return`,
+//                (CASE `status` WHEN :status THEN (date_end-date_start) ELSE 0 END) AS `runtime`,
+//                `date_start`,
+//                `test_result`
+//            FROM '.SoapTest::model()->tableName().'
+//            WHERE id=:test_id'
+//        );
+//        $res = $cmd->queryRow(true, array(
+//            ":status"   => SoapTest::STATUS_TEST_STOP,
+//            ':test_id'  => $test_id
+//        ));
+//        return $res;
+//    }
+//
+//    public function runTestService($service_id)
+//    {
+//        $cmd = Yii::app()->db->createCommand(
+//            'SELECT id, function_id
+//            FROM '.SoapTest::model()->tableName().'
+//            WHERE service_id=:service_id AND status=:status'
+//        );
+//        $tests = $cmd->queryAll(true, array(
+//            ":status"     => SoapTest::STATUS_TEST_RUN,
+//            ':service_id' => $service_id
+//        ));
+//        $func = array();
+//        foreach($tests as $t){
+//            $func[$t['function_id']] = $t['function_id'];
+//            $this->run($t['id']);
+//        }
+//
+//        $cmd = Yii::app()->db->createCommand(
+//            'SELECT
+//                function_id,
+//                SUM(CASE `status`
+//                    WHEN :status THEN (date_end-date_start) ELSE 0 END
+//                ) AS `runtime`,
+//                MIN(`date_start`) AS `date_start`,
+//                MAX(`test_result`) AS `test_result`
+//            FROM '.SoapTest::model()->tableName().'
+//            WHERE service_id=:service_id AND function_id IN ('.implode(',', $func).')
+//            GROUP BY function_id'
+//        );
+//        $res = $cmd->queryAll(true, array(
+//            ":status"       => SoapTest::STATUS_TEST_STOP,
+//            ':service_id'   => $service_id
+//        ));
+//        return $res;
+//    }
+//
+
+
+//    public static function getCountRunningTests($service_id){
+//        $cmd = Yii::app()->db->createCommand(
+//            'SELECT COUNT(*) AS `c`
+//            FROM '.SoapTest::model()->tableName().'
+//            WHERE service_id=:service_id AND status=:status'
+//        );
+//        $row = $cmd->queryRow(true, array(
+//            ":status"     => SoapTest::STATUS_TEST_RUN,
+//            ':service_id' => $service_id
+//        ));
+//        return $row['c'];
+//    }
+
+//    public static function getCountRunningTestsFunc($function_id){
+//        $cmd = Yii::app()->db->createCommand(
+//            'SELECT COUNT(*) AS `c`
+//            FROM '.SoapTest::model()->tableName().'
+//            WHERE function_id=:function_id AND status=:status'
+//        );
+//        $row = $cmd->queryRow(true, array(
+//            ":status"     => SoapTest::STATUS_TEST_RUN,
+//            ':function_id' => $function_id
+//        ));
+//        return $row['c'];
+//    }
+
+//    /**
+//     * @param   int $id
+//     * @return  SoapTest
+//     */
+//    public function functionId($id)
+//    {
+//        $this->getDbCriteria()->mergeWith(array(
+//            'condition' => 'function_id = :function_id',
+//            'params'    => array(':function_id' => $id),
+//        ));
+////        var_dump($this);die;
+//        return $this;
+//    }
+
+    public function trueArgs($attribute)
+    {
+        if (!empty($this->$attribute) && is_null(CJSON::decode($this->$attribute))){
+            $this->addError(
+                $attribute,
+                'Не правильный формат JSON для аргументов.'
+            );
+        }
+    }
+
+    /**
+     * @return array customized attribute labels (name=>label)
+     */
+    public function attributeLabels()
+    {
+        return array(
+//            'id' => 'ID',
+            'name' => 'Название',
+            'args' => 'Аргументы',
+//            'testCounts' => 'Количество тестов'
+        );
+    }
+
+    /**
+     * @return array relational rules.
+     */
+    public function relations()
+    {
+        return array(
+            'soapFunction' => array(self::BELONGS_TO, 'SoapFunction', 'function_id'),
+        );
+    }
+
+    /**
+     * @return array validation rules for model attributes.
+     */
+    public function rules()
+    {
+        // NOTE: you should only define rules for those attributes that
+        // will receive user inputs.
+        return array(
+            array('name, args', 'required'),
+            array('args', 'trueArgs'),
+        );
+    }
+
+    /**
+     * @return string the associated database table name
+     */
+    public function tableName()
+    {
+        return 'soap_tests';
+    }
+
+    /**
+     * Returns the static model of the specified AR class.
+     * @param string $className active record class name.
+     * @return SoapTest the static model class
+     */
+    public static function model($className=__CLASS__)
+    {
+        return parent::model($className);
+    }
 }

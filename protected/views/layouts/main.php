@@ -4,7 +4,9 @@
  * @var $content string
  */
 Yii::app()->bootstrap->registerAllCss();
+//Yii::app()->clientScript->registerScriptFile('/static/js/jquery-1.9.1.js');
 Yii::app()->bootstrap->registerCoreScripts();
+
 ?>
 <!DOCTYPE html>
 <html lang="<?=Yii::app()->language?>">
