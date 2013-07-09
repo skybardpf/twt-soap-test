@@ -46,10 +46,10 @@ class SoapTest extends CActiveRecord {
                 function_id,
                 date_start,
                 status,
-                ( CASE test_result
-                    WHEN '.self::TEST_RESULT_ERROR.' OR '.self::TEST_RESULT_OK.'
-                    THEN( date_end - date_start )
-                    ELSE 0
+                ( CASE STATUS
+                    WHEN '.self::TEST_RESULT_ERROR.' THEN (date_end - date_start)
+                    WHEN '.self::TEST_RESULT_OK.' THEN (date_end - date_start)
+                    WHEN '.self::TEST_RESULT_NOT_EXECUTED.' THEN 0
                     END
                 ) AS `runtime`,
                 test_result,
