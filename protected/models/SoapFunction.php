@@ -56,15 +56,14 @@ class SoapFunction extends CActiveRecord
                 unset($params[$p['name']]);
             }
         }
-        $p = array();
-
-        if (!empty($params)){
-            foreach ($params as $k=>$v){
-                $p[] = $k;
-            }
-//            var_dump($p);die;
-            $errors = array_merge($errors, array(' - Переданы лишние поля: '.implode(', ', $p).'<br/>'));
-        }
+//        $p = array();
+//        if (!empty($params)){
+//            foreach ($params as $k=>$v){
+//                $p[] = $k;
+//            }
+////            var_dump($p);die;
+//            $errors = array_merge($errors, array(' - Переданы лишние поля: '.implode(', ', $p).'<br/>'));
+//        }
         return $errors;
     }
 
