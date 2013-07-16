@@ -19,6 +19,7 @@ $(document).ready(function(){
                 '<option value="date">date</option>'+
                 '</select>' +
                 '</td>'+
+                '<td><input name="SoapFunctionParam[country][description]" id="SoapFunctionParam_country_description" type="text"></td>'+
                 '<td><button class="del-param btn btn-primary" name="yt'+window.count_params+'" type="button">Удалить</button></td>'+
             '</tr>'
         );

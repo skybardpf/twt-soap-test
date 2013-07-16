@@ -60,11 +60,12 @@
 <div class="form">
     <?= $form->dropDownListRow($model, 'type', $types)?>
     <table class="params">
-        <tr><th>Название</th><th>Тип</th></tr>
+        <tr><th>Название</th><th>Тип</th><th>Описание</th><th>Удалить</th></tr>
         <?php foreach($params as $i=>$item): ?>
             <tr class="param-<?= $i; ?>">
                 <td><?php echo CHtml::activeTextField($item,"[$i]name"); ?></td>
                 <td><?php echo CHtml::activeDropDownList($item,"[$i]type", $param_types); ?></td>
+                <td><?php echo CHtml::activeTextField($item,"[$i]description"); ?></td>
                 <td><?php
                     $this->widget('bootstrap.widgets.TbButton', array(
                         'buttonType' => 'button',
