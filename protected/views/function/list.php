@@ -113,8 +113,11 @@ $this->widget('ext.bootstrap.widgets.TbGridView', array(
         array(
             'class'=> 'bootstrap.widgets.TbButtonColumn',
             'header' => 'Тесты',
-            'template'=>'{run_tests} {view} {delete}',
+            'template'=>'{run_tests} {update} {view} {delete}',
             'deleteConfirmation' => false,
+//            'htmlOptions' => array(
+//                'width: 200px;'
+//            ),
             'buttons'=>array
             (
                 'run_tests' => array
@@ -125,6 +128,11 @@ $this->widget('ext.bootstrap.widgets.TbGridView', array(
                     'label' => 'Выполнить тесты',
                     'icon' => 'icon-play-circle',
 //                    'url' => 'Yii::app()->createUrl("function/run_tests", array("id"=>$data["id"]))',
+                ),
+                'update' => array
+                (
+                    'label' => 'Редактирование параметров функции',
+                    'url' => 'Yii::app()->createUrl("function/update", array("id"=>$data["id"]))',
                 ),
                 'view' => array
                 (
@@ -140,6 +148,7 @@ $this->widget('ext.bootstrap.widgets.TbGridView', array(
                     'url' => 'Yii::app()->createUrl("function/delete_tests", array("id"=>$data["id"]))',
                 ),
             ),
+
         ),
     )
 ));

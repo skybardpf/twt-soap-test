@@ -99,6 +99,7 @@ $this->widget('ext.bootstrap.widgets.TbGridView', array(
 
         array(
             'header' => 'Результат',
+            'type' => 'raw',
             'htmlOptions' => array(
                 'class' => 'td-last-return'
             ),

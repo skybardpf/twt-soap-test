@@ -10,6 +10,9 @@ class FunctionController extends Controller
             'list' => array(
                 'class' => 'application.controllers.function.ListAction',
             ),
+            'update' => array(
+                'class' => 'application.controllers.function.UpdateAction',
+            ),
             'run_tests' => array(
                 'class' => 'application.controllers.function.Run_testsAction',
             ),

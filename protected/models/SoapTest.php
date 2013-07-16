@@ -19,6 +19,7 @@ class CSoapTestException extends CException {}
  *  @property $test_result  int
  *  @property $args         string
  *  @property $last_return  string
+ *
  *  @property $soapFunction SoapFunction
  */
 class SoapTest extends CActiveRecord {
@@ -146,6 +147,17 @@ class SoapTest extends CActiveRecord {
         $this->save();
 
         try {
+            if($this->soapFunction->type == 'delete'){
+                $args = CJSON::decode($this->args);
+                if (!isset($args[0])){
+                    throw new CSoapTestException('Переданан неправильный формат аргументов в функцию.');
+                }
+                $errors = $this->soapFunction->checkParams($args[0]);
+                if (!empty($errors)){
+                    throw new CSoapTestException('Переданы неправильные параметры:<br/>' . implode('<br/>', $errors));
+                }
+            }
+
             if (!$this->soapFunction->soapService->isAvailableService()){
                 throw new CSoapTestException('SOAP сервис не доступен.');
             }
@@ -156,13 +168,50 @@ class SoapTest extends CActiveRecord {
 
             try {
                 $return = $soapClient->__soapCall($this->soapFunction->name, (array)json_decode($this->args, true));
-                if (empty($return) || !isset($return->return) || empty($return->return) || !is_string($return->return)){
+                if (empty($return) || !isset($return->return) || empty($return->return)){
                     throw new CSoapTestException('Не получен результат функции.');
                 }
-                if (stripos($return->return, 'error') !== false){
+                if (is_string($return->return) && stripos($return->return, 'error') !== false){
                     throw new CSoapTestException($return->return);
                 }
                 $return = $return->return;
+
+                if (in_array($this->soapFunction->type, array('get', 'list'))){
+                    $ret = CJSON::decode($return);
+                    $errors = array();
+                    if ($this->soapFunction->type == 'list'){
+                        if (empty($ret)){
+                            throw new CSoapTestException('Получен неизвестный результат функции.');
+                        }
+//                        foreach($ret as $p){
+//                            var_dump($p);die;
+                            $errors = $this->soapFunction->checkParams($ret[0]);
+//                        }
+                    } elseif ($this->soapFunction->type == 'get'){
+                        if (!isset($ret[0])){
+                            throw new CSoapTestException('Получен неизвестный результат функции.');
+                        }
+                        $errors = $this->soapFunction->checkParams($ret[0]);
+                    }
+                    if (!empty($errors)){
+                        throw new CSoapTestException('Ошибки:<br/>' . implode('<br/>', $errors).'<br/>Результат:<br/>'.$return);
+                    }
+                } elseif ($this->soapFunction->type == 'save'){
+                    if (!ctype_digit($return)){
+                        throw new CSoapTestException('Ошибки при сохранении данных.<br/>Результат:<br/>'.$return);
+                    }
+//                    $args = CJSON::decode($this->args);
+//                    $ret = $this->soapFunction->checkParams($args);
+//                    if (!empty($ret)){
+//                        throw new CSoapTestException('Ошибки в передаваемых параметрах:<br/>' . implode('<br/>', $ret));
+//                    }
+
+
+                } elseif($this->soapFunction->type == 'delete'){
+                    if (!is_bool($return)){
+                        throw new CSoapTestException('Ответ не boolean:<br/>Результат:<br/>'.$return);
+                    }
+                }
 
             } catch (SoapFault $e) {
                 throw new CSoapTestException($e->getMessage());
@@ -424,7 +473,7 @@ class SoapTest extends CActiveRecord {
      */
     public function tableName()
     {
-        return 'soap_tests';
+        return 'soap_test';
     }
 
     /**

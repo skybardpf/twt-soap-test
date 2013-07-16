@@ -7,8 +7,8 @@
 
 $this->breadcrumbs = array(
     'Сервисы' => $this->createUrl('service/list'),
-    'Функции' => $this->createUrl('function/list', array('id' => $model->soapFunction->soapService->primaryKey)),
-    'Тесты' => $this->createUrl('test/list', array('id' => $model->soapFunction->id)),
+    'Функции' => $this->createUrl('function/list', array('service_id' => $model->soapFunction->soapService->primaryKey)),
+    'Тесты' => $this->createUrl('test/list', array('func_id' => $model->soapFunction->id)),
     'Добавить тест',
 );
 

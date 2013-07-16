@@ -7,10 +7,12 @@
  * @property integer    $id
  * @property integer    $service_id
  * @property string     $name
+ * @property string     $type       Тип функции CRUD
  *
  * The followings are the available model relations:
  * @property SoapService $soapService
  * @property SoapTest[] $soapTests
+ * @property SoapFunctionParam[] $soapFunctionParams
  */
 class SoapFunction extends CActiveRecord
 {
@@ -30,6 +32,79 @@ class SoapFunction extends CActiveRecord
     public function tableName()
     {
         return 'soap_function';
+    }
+
+    /**
+     * @param array $params
+     * @return array
+     */
+    public function checkParams(array $params)
+    {
+        $errors = array();
+        foreach ($this->soapFunctionParams as $p){
+            if ($this->type == 'save' && $p['name'] == 'id' && isset($params['id'])){
+                if (!$this->_checkType($params['id'], $p['type'])) {
+                    $errors[] = ' - Неверный тип поля ('.$p['type'].'): '.$p['name'];
+                }
+                unset($params['id']);
+            } elseif (!isset($params[$p['name']])){
+                $errors[] = ' - Пропущенно поле: '.$p['name'];
+            } else {
+                if (!$this->_checkType($params[$p['name']], $p['type'])) {
+                    $errors[] = ' - Неверный тип поля ('.$p['type'].'): '.$p['name'];
+                }
+                unset($params[$p['name']]);
+            }
+        }
+        $p = array();
+
+        if (!empty($params)){
+            foreach ($params as $k=>$v){
+                $p[] = $k;
+            }
+//            var_dump($p);die;
+            $errors = array_merge($errors, array(' - Переданы лишние поля: '.implode(',', $p).'<br/>'));
+        }
+        return $errors;
+    }
+
+    /**
+     * @static
+     * @return array
+     */
+    public static function getTypes()
+    {
+        return array(
+            'get' => 'Get',
+            'list' => 'List',
+            'save' => 'Save',
+            'delete' => 'Delete',
+        );
+    }
+
+    /**
+     * @param mixed $val
+     * @param string $type
+     * @param bool $is_empty
+     * @return bool
+     */
+    private function _checkType($val, $type, $is_empty=true)
+    {
+        if ($is_empty && empty($val)){
+            return true;
+        }
+        if ($type == 'string'){
+            return is_string($val);
+        } elseif ($type == 'integer'){
+            return is_int($val);
+        } elseif ($type == 'bool'){
+            return is_bool($val);
+        } elseif ($type == 'array'){
+            return is_array($val);
+        }elseif ($type == 'date'){
+            return (FALSE !== strtotime($val));
+        }
+        return false;
     }
 
     /**
@@ -157,6 +232,7 @@ class SoapFunction extends CActiveRecord
 		// will receive user inputs.
 		return array(
 			array('service_id, name', 'required'),
+			array('type', 'in', 'range' => array_keys(SoapFunction::getTypes())),
 			array('service_id', 'numerical', 'integerOnly'=>true),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
@@ -174,6 +250,7 @@ class SoapFunction extends CActiveRecord
 		return array(
 			'soapService' => array(self::BELONGS_TO, 'SoapService', 'service_id'),
 			'soapTests' => array(self::HAS_MANY, 'SoapTest', 'function_id'),
+			'soapFunctionParams' => array(self::HAS_MANY, 'SoapFunctionParam', 'function_id'),
 		);
 	}
 
@@ -185,6 +262,7 @@ class SoapFunction extends CActiveRecord
 		return array(
 			'id' => 'ID',
             'name' => 'Имя',
+            'type' => 'Тип функции',
 			'service_id' => 'Сервис',
 			'testCounts' => 'Количество тестов'
 		);
