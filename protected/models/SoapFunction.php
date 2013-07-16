@@ -63,7 +63,7 @@ class SoapFunction extends CActiveRecord
                 $p[] = $k;
             }
 //            var_dump($p);die;
-            $errors = array_merge($errors, array(' - Переданы лишние поля: '.implode(',', $p).'<br/>'));
+            $errors = array_merge($errors, array(' - Переданы лишние поля: '.implode(', ', $p).'<br/>'));
         }
         return $errors;
     }

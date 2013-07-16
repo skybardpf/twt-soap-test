@@ -188,18 +188,20 @@ class SoapTest extends CActiveRecord {
                             $errors = $this->soapFunction->checkParams($ret[0]);
 //                        }
                     } elseif ($this->soapFunction->type == 'get'){
-                        if (!isset($ret[0])){
-                            throw new CSoapTestException('Получен неизвестный результат функции.');
+                        if (!empty($ret)){
+                            if (!isset($ret[0])){
+                                throw new CSoapTestException('Получен неизвестный результат функции.');
+                            }
+                            $errors = $this->soapFunction->checkParams($ret[0]);
                         }
-                        $errors = $this->soapFunction->checkParams($ret[0]);
                     }
                     if (!empty($errors)){
                         throw new CSoapTestException('Ошибки:<br/>' . implode('<br/>', $errors).'<br/>Результат:<br/>'.$return);
                     }
                 } elseif ($this->soapFunction->type == 'save'){
-                    if (!ctype_digit($return)){
-                        throw new CSoapTestException('Ошибки при сохранении данных.<br/>Результат:<br/>'.$return);
-                    }
+//                    if (!ctype_digit($return)){
+//                        throw new CSoapTestException('Ошибки при сохранении данных.<br/>Результат:<br/>'.$return);
+//                    }
 //                    $args = CJSON::decode($this->args);
 //                    $ret = $this->soapFunction->checkParams($args);
 //                    if (!empty($ret)){
