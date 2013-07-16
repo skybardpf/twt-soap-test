@@ -22,6 +22,7 @@
     $this->breadcrumbs = array(
         'Сервисы' => $this->createUrl('service/list'),
         'Функции' => $this->createUrl('function/list', array('service_id' => $model->soapService->primaryKey)),
+        'Тесты' => $this->createUrl('test/list', array('func_id' => $model->primaryKey)),
         'Параметры функции'
     );
 
@@ -83,10 +84,6 @@
 </div><!-- form -->
 
 <?php
-
-
-//echo $form->textFieldRow($model, 'name', array('class' => 'input-xxlarge',));
-//
 //echo $form->textAreaRow($model, 'args', array(
 //	'class' => 'input-xxlarge',
 //	'hint' => 'Формат JSON, массив аргументов. Например:<br>

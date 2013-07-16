@@ -17,7 +17,8 @@ Yii::app()->clientScript->registerScriptFile('/static/js/tests/list.js');
 
 $this->breadcrumbs = array(
     'Сервисы' => $this->createUrl('service/list'),
-    'Функции' => $this->createUrl('function/list', array('service_id' => $function->soapService->id)),
+    'Функции' => $this->createUrl('function/list', array('service_id' => $function->soapService->primaryKey)),
+    'Параметры функции' => $this->createUrl('function/update', array('id' => $function->primaryKey)),
     'Тесты'
 );
 
