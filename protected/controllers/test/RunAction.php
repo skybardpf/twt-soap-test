@@ -27,11 +27,12 @@ class RunAction extends CAction
                 throw new CException('Тест уже запущен.');
             }
 
+            $format = new CFormatter();
             if (Yii::app()->request->isAjaxRequest) {
                 echo CJSON::encode(array(
                     'success' => true,
                     'data' => array(
-                        'last_return' => mb_strlen($test->last_return) > 1000 ? mb_substr($test->last_return, 0, 1000)."…" : $test->last_return,
+                        'last_return' => $format->formatHtml(mb_strlen($test->last_return) > 1000 ? mb_substr($test->last_return, 0, 1000)."…" : $test->last_return),
                         'test_result' => $test->test_result,
                         'date_start' => Yii::app()->dateFormatter->format('dd MMMM yyyy HH:mm:ss', $test->date_start),
                         'runtime' => ($test->test_result == SoapTest::TEST_RESULT_OK)

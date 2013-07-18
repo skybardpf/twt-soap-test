@@ -9,12 +9,21 @@ class UpdateAction extends CAction
 	public function run($id)
 	{
         /**
+         * @var $controller FunctionController
+         */
+        $controller = $this->controller;
+
+        /**
          * @var $model SoapFunction
          */
-        $model = SoapFunction::model()->findByPk($id);
-        if ($model === null) {
-            throw new CHttpException(404, 'Функция не найдена.');
-        }
+        $model = $controller->loadModel($id);
+
+        /**
+         * @var $service SoapService
+         */
+//        var_dump($model);die;
+        $service = $controller->loadService($model->groupFunctions->soapService->primaryKey);
+        $controller->pageTitle = 'Редактирование функции «'.$model->name.'» для сервиса «'.$service->name.'»';
 
         if(isset($_POST['ajax']) && $_POST['ajax']==='model-form-form') {
             echo CActiveForm::validate($model);
@@ -100,11 +109,12 @@ class UpdateAction extends CAction
 
 //        var_dump($model->soapFunctionParams);die;
 
-        $this->controller->render(
+        $controller->render(
             'form',
             array(
                 'model' => $model,
-                'params' => $names
+                'service' => $service,
+                'function_params' => $model->soapFunctionParams
             )
         );
 	}

@@ -12,12 +12,10 @@
  *
  * Связи с другими таблицами.
  * @property SoapFunction[] $soapFunctions
+ * @property GroupFunctions[] $groupFunctions
  */
 class SoapService extends CActiveRecord
 {
-    /** @var SoapClient */
-//    private $_soapClient = null;
-
     /**
      * Returns the static model of the specified AR class.
      * @param string $className active record class name.
@@ -37,41 +35,57 @@ class SoapService extends CActiveRecord
     }
 
     /**
+     * @return GroupFunctions Возвращает модель группы по умолчанию.
+     * @throws CHttpException
+     */
+    public function getDefaultGroup()
+    {
+        /**
+         * @var $group GroupFunctions
+         */
+        $group = GroupFunctions::model()->find(array(
+            'select' => 'id',
+            'condition' => 'service_id=:service_id AND name=:name',
+            'params' => array(
+                ':service_id' => $this->primaryKey,
+                ':name' => GroupFunctions::GROUP_NAME_DEFAULT,
+            ),
+        ));
+        if ($group == null){
+            throw new CHttpException(500, 'Не существует дефолтной группы для сервиса.');
+        }
+        return $group;
+    }
+
+    /**
+     * @return GroupFunctions[] Возвращает список групп. Формат [id => name]
+     * @throws CHttpException
+     */
+    public function getGroups()
+    {
+        /**
+         * @var $data GroupFunctions[]
+         */
+        $data = GroupFunctions::model()->findAll(array(
+            'select' => 'id, name',
+            'condition' => 'service_id=:service_id',
+            'params' => array(
+                ':service_id' => $this->primaryKey,
+            ),
+        ));
+        $groups = array();
+        foreach ($data as $v){
+            $groups[$v->id] = $v->name;
+        }
+        return $groups;
+    }
+
+    /**
      * Возвращает список SOAP сервисов.
-     *
      * @return array
      */
     public static function getList()
 	{
-        /*$cmd = Yii::app()->db->createCommand(
-            'SELECT
-                s.id,
-                s.name,
-                s.url,
-                CASE
-                    WHEN t.count IS NULL THEN 0
-                    ELSE t.count
-                END AS `count_tests`,
-                CASE
-                    WHEN f.count IS NULL THEN 0
-                    ELSE f.count
-                END AS `count_functions`
-            FROM '.SoapService::model()->tableName().' s
-            LEFT JOIN
-                (SELECT
-                    f.service_id, COUNT(*) AS `count`
-                FROM '.SoapTest::model()->tableName().' t
-                JOIN '.SoapFunction::model()->tableName().' f ON t.function_id = f.id
-                GROUP BY f.service_id
-            ) t ON t.service_id = s.id
-            LEFT JOIN (
-                SELECT
-                    service_id, COUNT(*) AS `count`
-                FROM '.SoapFunction::model()->tableName().'
-                GROUP BY service_id
-            ) f ON f.service_id=s.id'
-        );*/
-
         $cmd = Yii::app()->db->createCommand(
             'SELECT
                 s.id,
@@ -203,10 +217,7 @@ class SoapService extends CActiveRecord
 			array('name, url', 'required'),
 			array('url', 'url'),
 			array('login, password', 'safe'),
-			array('url', 'isSoapServiceUrl', 'skipOnError' => true),
-			// The following rule is used by search().
-			// Please remove those attributes that should not be searched.
-//			array('id, name, url', 'safe', 'on'=>'search'),
+//			array('url', 'isSoapServiceUrl', 'skipOnError' => true),
 		);
 	}
 
@@ -216,7 +227,9 @@ class SoapService extends CActiveRecord
 	public function relations()
 	{
 		return array(
+            // todo надо убрать. перевести на GroupFunctions
 			'soapFunctions' => array(self::HAS_MANY, 'SoapFunction', 'service_id'),
+            'groupFunctions' => array(self::HAS_MANY, 'GroupFunctions', 'service_id'),
 		);
 	}
 
@@ -237,39 +250,19 @@ class SoapService extends CActiveRecord
 	}
 
     /**
-     *  После сохранения сервиса, получаем список его функций и добавляем в БД.
+     * После добавления нового сервиса,
+     * автоматически создаем у него новую группу функций (GROUP_NAME_DEFAULT).
      */
     protected function afterSave()
 	{
 		parent::afterSave();
 
-        $client = $this->getSoapClient();
-		$soap_functions = $client->__getFunctions();
-		$in_db_functions = array();
-		if (!$this->isNewRecord) {
-			$in_db_functions = self::getDbConnection()->createCommand()
-			->select('name')
-			->from(SoapFunction::model()->tableName())
-			->where('service_id = :service_id')
-			->queryColumn(array(':service_id' => $this->id));
-		}
-		$functions = array();
-		foreach ($soap_functions as $f) {
-			$matches = null;
-			preg_match('/(\w+)\s+(\w+)\((.*?)\)/i', ($f), $matches);
-			if (!empty($matches)) {
-				$function_name = $matches[2];
-				if (!in_array($function_name, $functions)) {
-					$functions[] = $function_name;
-					if (!in_array($function_name, $in_db_functions)) {
-						$function = new SoapFunction();
-						$function->service_id = $this->id;
-						$function->name = $function_name;
-						$function->save(false);
-					}
-				}
-			}
-		}
+        if ($this->isNewRecord){
+            $group = new GroupFunctions();
+            $group->service_id = $this->primaryKey;
+            $group->name = GroupFunctions::GROUP_NAME_DEFAULT;
+            $group->save();
+        }
 	}
 
     /**

@@ -1,5 +1,10 @@
 <?php
-
+/**
+ * Class FunctionController
+ * @author Skibardin A.A. <skybardpf@artektiv.ru>
+ *
+ * Управление функциями.
+ */
 class FunctionController extends Controller
 {
 	public $defaultAction = 'list';
@@ -9,6 +14,9 @@ class FunctionController extends Controller
 		return array(
             'list' => array(
                 'class' => 'application.controllers.function.ListAction',
+            ),
+            'create' => array(
+                'class' => 'application.controllers.function.CreateAction',
             ),
             'update' => array(
                 'class' => 'application.controllers.function.UpdateAction',
@@ -25,30 +33,43 @@ class FunctionController extends Controller
 		);
 	}
 
-//	public function actionUpdate($id)
-//	{
-//		$model = SoapFunction::model()->findByPk($id);
-//		if (empty($model)) throw new CHttpException(404);
-//		$model->setScenario('update');
-//
-//		if(isset($_POST['ajax']) && $_POST['ajax']==='model-form-form') {
-//			echo CActiveForm::validate($model);
-//			Yii::app()->end();
-//		}
-//
-//		if (isset($_POST[get_class($model)])) {
-//			$model->attributes=$_POST[get_class($model)];
-//			if ($model->save()) {
-//				$this->redirect($this->createUrl('view', array('id' => $model->id)));
-//			}
-//		}
-//		$this->render('update', array('model' => $model));
-//	}
-//
-//	public function actionView($id)
-//	{
-//		/** @var $function SoapFunction */
-//		$function = SoapFunction::model()->findByPk($id);
-//		$this->redirect($this->createUrl('list', array('id' => $function->service_id)));
-//	}
+    /**
+     * @param SoapService $service
+     * @return SoapFunction
+     */
+    public function createModel(SoapService $service)
+    {
+        $model = new SoapFunction();
+        $group = $service->getDefaultGroup();
+        $model->group_id = $group->primaryKey;
+        return $model;
+    }
+
+    /**
+     * @param int $id
+     * @return SoapFunction
+     * @throws CHttpException
+     */
+    public function loadModel($id)
+    {
+        $model = SoapFunction::model()->findByPk($id);
+        if ($model === null) {
+            throw new CHttpException(404, 'Функция не найдена.');
+        }
+        return $model;
+    }
+
+    /**
+     * @param int $service_id
+     * @return SoapService
+     * @throws CHttpException
+     */
+    public function loadService($service_id)
+    {
+        $service = SoapService::model()->findByPk($service_id);
+        if ($service === null) {
+            throw new CHttpException(404, 'Не найден SOAP сервис.');
+        }
+        return $service;
+    }
 }

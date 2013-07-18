@@ -1,36 +1,39 @@
 <?php
 /**
- * Форма создания/редактирование параметров, возвращаемых значений для функции.
+ * Форма создания/редактирование карточки функции.
+ * Можно указать входные/выходные параметры, тип функции (get, list, save, delete).
+ * Задать описание.
  *
- * @var $this   FunctionController
- * @var $model  SoapFunction
- * @var $params SoapFunctionParam[]
- * @var $form   TbActiveForm
+ * @var $this       FunctionController
+ * @var $service    SoapService
+ * @var $model      SoapFunction
+ * @var $function_params     SoapFunctionParam[]
+ * @var $form       TbActiveForm
  */
 ?>
 
 <script>
-    window.count_params = <?= count($params); ?>;
+    window.count_params = <?= count($function_params); ?>;
 </script>
 
 <?php
-    $this->pageTitle = 'Параметры функции «'.$model->name.'»';
     echo '<h2>'.$this->pageTitle.'</h2>';
 
     Yii::app()->clientScript->registerScriptFile('/static/js/function/form.js');
 
     $this->breadcrumbs = array(
         'Сервисы' => $this->createUrl('service/list'),
-        'Функции' => $this->createUrl('function/list', array('service_id' => $model->soapService->primaryKey)),
-        'Тесты' => $this->createUrl('test/list', array('func_id' => $model->primaryKey)),
-        'Параметры функции'
+        'Функции' => $this->createUrl('function/list', array('service_id' => $service->primaryKey)),
     );
+    if (!$model->isNewRecord){
+        $this->breadcrumbs['Тесты функции'] = $this->createUrl('test/list', array('func_id' => $model->primaryKey));
+    }
+    $this->breadcrumbs[] = 'Карточка функции';
 
     $form = $this->beginWidget('bootstrap.widgets.TbActiveForm', array(
         'id' => 'model-form-form',
         'type' => 'horizontal',
         'enableAjaxValidation' => true,
-
     ));
 
     $this->widget('bootstrap.widgets.TbButton', array(
@@ -38,31 +41,67 @@
         'type' => 'primary',
         'label' => 'Сохранить'
     ));
-
     echo '&nbsp;';
-
     $this->widget('bootstrap.widgets.TbButton', array(
         'buttonType' => 'link',
         'label' => 'Отмена',
-        'url' => $this->createUrl(
-            'list',
-            array(
-                'service_id' => $model->soapService->primaryKey,
-            )
-        )
+        'url' => $this->createUrl('function/list', array('service_id' => $service->primaryKey)),
     ));
+    echo '<br/><br/>';
 
-    echo $form->errorSummary($model);
+    if ($model->hasErrors()){
+        echo '<br/><br/>'.$form->errorSummary($model);
+    }
 
     $param_types = SoapFunctionParam::getParamTypes();
+    $groups = $service->getGroups();
     $types = array_merge(array('' => 'Выберите'), SoapFunction::getTypes())
 ?>
 
-<div class="form">
-    <?= $form->dropDownListRow($model, 'type', $types)?>
-    <table class="params">
+<fieldset>
+    <?= $form->dropDownListRow($model, 'group_id', $groups); ?>
+    <?= $form->textFieldRow($model, 'name'); ?>
+    <?= $form->dropDownListRow($model, 'type', $types); ?>
+    <?= $form->textAreaRow($model, 'description'); ?>
+
+    Входные параметры:<br/>
+    <table class="table input-params">
         <tr><th>Название</th><th>Тип</th><th>Описание</th><th>Удалить</th></tr>
-        <?php foreach($params as $i=>$item): ?>
+        <?php foreach($function_params as $i=>$item): ?>
+            <tr class="param-<?= $i; ?>">
+                <td><?php echo CHtml::activeTextField($item,"[$i]name"); ?></td>
+                <td><?php echo CHtml::activeDropDownList($item,"[$i]type", $param_types); ?></td>
+                <td><?php echo CHtml::activeCheckBox($item,"[$i]required"); ?></td>
+                <td><?php echo CHtml::activeTextField($item,"[$i]description"); ?></td>
+                <td><?php
+                    $this->widget('bootstrap.widgets.TbButton', array(
+                        'buttonType' => 'button',
+                        'type' => 'primary',
+                        'label' => 'Удалить',
+                        'htmlOptions' => array(
+                            'class' => 'del-input-param'
+                        )
+                    ));
+                    ?></td>
+            </tr>
+        <?php endforeach; ?>
+    </table>
+
+<?php
+    $this->widget('bootstrap.widgets.TbButton', array(
+        'buttonType' => 'button',
+        'type' => 'primary',
+        'label' => 'Добавить входной параметр',
+        'htmlOptions' => array(
+            'class' => 'add-input-param'
+        )
+    ));
+?>
+    <br/><br/>
+    Выходные параметры:<br/>
+    <table class="table output-params">
+        <tr><th>Название</th><th>Тип</th><th>Описание</th><th>Удалить</th></tr>
+        <?php foreach($function_params as $i=>$item): ?>
             <tr class="param-<?= $i; ?>">
                 <td><?php echo CHtml::activeTextField($item,"[$i]name"); ?></td>
                 <td><?php echo CHtml::activeDropDownList($item,"[$i]type", $param_types); ?></td>
@@ -73,7 +112,7 @@
                         'type' => 'primary',
                         'label' => 'Удалить',
                         'htmlOptions' => array(
-                            'class' => 'del-param'
+                            'class' => 'del-output-param'
                         )
                     ));
                 ?></td>
@@ -81,25 +120,18 @@
         <?php endforeach; ?>
     </table>
 
-</div><!-- form -->
-
 <?php
-//echo $form->textAreaRow($model, 'args', array(
-//	'class' => 'input-xxlarge',
-//	'hint' => 'Формат JSON, массив аргументов. Например:<br>
-//       <code>[{"summa": "1000"}, 3, [1,3,{"test": 4}]]</code> — передать первым аргументов объект со свойством summa равным 1000,
-//       вторым аргументом значение 3,
-//       третьим массив состоящий из трех элементов 1, 3, и объекта со свойством test и значением 4'
-//));
-
     $this->widget('bootstrap.widgets.TbButton', array(
         'buttonType' => 'button',
         'type' => 'primary',
-        'label' => 'Добавить параметр',
+        'label' => 'Добавить выходной параметр',
         'htmlOptions' => array(
-            'class' => 'add-param'
+            'class' => 'add-output-param'
         )
     ));
+?>
+</fieldset>
 
+<?php
     $this->endWidget();
 ?>

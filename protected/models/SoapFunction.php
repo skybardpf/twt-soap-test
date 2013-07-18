@@ -5,14 +5,14 @@
  * Список функций, которые поддерживает определенный SOAP сервис.
  *
  * @property integer    $id
- * @property integer    $service_id
+ * @property integer    $group_id
  * @property string     $name
- * @property string     $type       Тип функции CRUD
+ * @property string     $type           Тип функции CRUD
+ * @property string     $description    Описание функции
  *
- * The followings are the available model relations:
- * @property SoapService $soapService
- * @property SoapTest[] $soapTests
- * @property SoapFunctionParam[] $soapFunctionParams
+ * @property SoapTest[]             $soapTests
+ * @property SoapFunctionParam[]    $soapFunctionParams
+ * @property GroupFunctions         $groupFunctions
  */
 class SoapFunction extends CActiveRecord
 {
@@ -117,43 +117,44 @@ class SoapFunction extends CActiveRecord
     {
         $cmd = Yii::app()->db->createCommand('
             SELECT
-                f.id, f.name,
+                f.id,
+                gf.name as `group_name`,
+                gf.id as `group_id`,
+                f.name,
                 (CASE
                     WHEN t.count_tests IS NULL THEN 0
-                    ELSE t.count_tests END
-                ) as `count_tests`,
+                    ELSE t.count_tests
+                END) as `count_tests`,
                 (CASE
                     WHEN t.count_running IS NULL THEN 0
                     WHEN t.count_running > 0 THEN 1
                     WHEN t.count_running = 0 THEN 0
-                    END
-                ) as `has_running_tests`,
+                END) as `has_running_tests`,
                 t.date_start,
                 t.status,
                 t.runtime,
                 t.test_result
             FROM '.SoapFunction::model()->tableName().' AS f
-            LEFT JOIN (
-                SELECT
+            JOIN '.GroupFunctions::model()->tableName().' as gf ON gf.id=f.group_id
+            LEFT JOIN
+                (SELECT
                     `function_id` AS `fid`,
-                    COUNT(`id`) AS `count_tests`,
-                    SUM(CASE `status`
-                        WHEN '.SoapTest::STATUS_TEST_RUN.' THEN 1
-                        WHEN '.SoapTest::STATUS_TEST_IN_QUEUE.' THEN 1
-                        WHEN '.SoapTest::STATUS_TEST_STOP.' THEN 0
-                        END
-                    ) AS `count_running`,
-                    SUM(CASE `test_result`
-                        WHEN '.SoapTest::TEST_RESULT_ERROR.' OR '.SoapTest::TEST_RESULT_OK.'
-                        THEN (date_end-date_start) ELSE 0 END
-                    ) AS `runtime`,
-                    MIN(`date_start`) AS `date_start`,
-                    MAX(`status`) AS `status`,
-                    MAX(`test_result`) AS `test_result`
+                        COUNT(`id`) AS `count_tests`,
+                        SUM(CASE `status`
+                            WHEN '.SoapTest::STATUS_TEST_RUN.' THEN 1
+                            WHEN '.SoapTest::STATUS_TEST_IN_QUEUE.' THEN 1
+                            WHEN '.SoapTest::STATUS_TEST_STOP.' THEN 0
+                        END) AS `count_running`,
+                        SUM(IF(`test_result`='.SoapTest::TEST_RESULT_ERROR.' OR
+                             `test_result`='.SoapTest::TEST_RESULT_OK.',
+                            (date_end - date_start),  0
+                        )) AS `runtime`,
+                        MIN(`date_start`) AS `date_start`,
+                        MAX(`status`) AS `status`,
+                        MAX(`test_result`) AS `test_result`
                 FROM '.SoapTest::model()->tableName().'
-                GROUP BY `function_id`
-            ) t ON f.id=t.fid
-            WHERE f.service_id=:service_id'
+                GROUP BY `function_id`) t ON f.id = t.fid
+            WHERE gf.service_id = :service_id'
         );
         return $cmd->queryAll(true, array(
             ":service_id" => $service_id
@@ -230,12 +231,22 @@ class SoapFunction extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('service_id, name', 'required'),
+			array('name', 'required'),
+			array('name', 'unique'),
+			array('name', 'length', 'max' => 45),
+
+            array('type', 'required'),
 			array('type', 'in', 'range' => array_keys(SoapFunction::getTypes())),
-			array('service_id', 'numerical', 'integerOnly'=>true),
+
+            array('group_id', 'required'),
+//            array('group_id', 'in', 'range' => array_keys(SoapFunction::getTypes())),
+
+            array('description', 'length', 'max' => 45),
+
+//            array('service_id', 'numerical', 'integerOnly'=>true),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, service_id, name', 'safe', 'on'=>'search'),
+//			array('id, service_id, name', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -247,9 +258,10 @@ class SoapFunction extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'soapService' => array(self::BELONGS_TO, 'SoapService', 'service_id'),
+//			'soapService' => array(self::BELONGS_TO, 'SoapService', 'service_id'),
 			'soapTests' => array(self::HAS_MANY, 'SoapTest', 'function_id'),
 			'soapFunctionParams' => array(self::HAS_MANY, 'SoapFunctionParam', 'function_id'),
+			'groupFunctions' => array(self::BELONGS_TO, 'GroupFunctions', 'group_id'),
 		);
 	}
 
@@ -260,10 +272,10 @@ class SoapFunction extends CActiveRecord
 	{
 		return array(
 			'id' => 'ID',
+            'group_id' => 'Группа',
             'name' => 'Имя',
             'type' => 'Тип функции',
-			'service_id' => 'Сервис',
-			'testCounts' => 'Количество тестов'
+            'description' => 'Описание',
 		);
 	}
 
@@ -325,24 +337,4 @@ class SoapFunction extends CActiveRecord
             ':function_id' => $this->primaryKey
         ));
     }
-
-	/**
-	 * Retrieves a list of models based on the current search/filter conditions.
-	 * @return CActiveDataProvider the data provider that can return the models based on the search/filter conditions.
-	 */
-	public function search()
-	{
-		// Warning: Please modify the following code to remove attributes that
-		// should not be searched.
-
-		$criteria=new CDbCriteria;
-
-		$criteria->compare('id',$this->id);
-		$criteria->compare('service_id',$this->service_id);
-		$criteria->compare('name',$this->name,true);
-
-		return new CActiveDataProvider($this, array(
-			'criteria'=>$criteria,
-		));
-	}
 }
