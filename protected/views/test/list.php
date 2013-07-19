@@ -17,12 +17,12 @@ Yii::app()->clientScript->registerScriptFile('/static/js/tests/list.js');
 
 $this->breadcrumbs = array(
     'Сервисы' => $this->createUrl('service/list'),
-    'Функции' => $this->createUrl('function/list', array('service_id' => $function->soapService->primaryKey)),
+    'Функции' => $this->createUrl('function/list', array('service_id' => $function->groupFunctions->soapService->primaryKey)),
     'Параметры функции' => $this->createUrl('function/update', array('id' => $function->primaryKey)),
     'Тесты'
 );
 
-echo CHtml::tag('h2', array(), 'Список тестов для функции «'.$function->name.'» сервиса «'.$function->soapService->name.'»');
+echo CHtml::tag('h2', array(), 'Список тестов для функции «'.$function->name.'» сервиса «'.$function->groupFunctions->soapService->name.'»');
 
 //echo CHtml::tag('div', array('class' => 'alert_runtests hidden'),
 //    CHtml::tag('div', array('class' => 'alert alert-info'), 'Есть запущенные тесты'));

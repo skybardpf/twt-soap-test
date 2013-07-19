@@ -43,7 +43,7 @@ class UpdateAction extends CAction
             }
         }
         $this->controller->render(
-            'create',
+            'form',
             array(
                 'model' => $model
             )

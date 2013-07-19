@@ -17,15 +17,18 @@ class RunAction extends CAction
 	{
         try {
             /**
+             * @var $controller TestController
+             */
+            $controller = $this->controller;
+
+            /**
              * @var $test SoapTest
              */
-            $test = SoapTest::model()->findByPk($id);
-            if (!$test) {
-                throw new CException('Тест не найден.');
-            }
-            if (!$test->run()){
+            $test = $controller->loadModel($id);
+            if ($test->is_running()){
                 throw new CException('Тест уже запущен.');
             }
+            $test->run();
 
             $format = new CFormatter();
             if (Yii::app()->request->isAjaxRequest) {

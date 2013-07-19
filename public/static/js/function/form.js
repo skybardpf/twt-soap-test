@@ -2,63 +2,58 @@
  *  @var {Number} window.count_params
  */
 $(document).ready(function(){
-//    var table_output = $('table.output-params');
+    $('div.add-output-param ul li a').click(function(){
+        var type_of_data = $(this).data('type-of-data');
+        $.ajax({
+            success: function(html){
+                $('table.output-params').append(html);
 
-    $('button.add-output-param').on('click', function(){
-
-        var name = 'SoapFunctionParam['+window.count_params+'][name]';
-        var id = 'SoapFunctionParam_'+window.count_params+'_name';
-//        console.log(name, id);
-
-        $('table.output-params').append(
-            '<tr class="param-'+window.count_params+'">' +
-                '<td><input name="'+name+'" id="'+id+'" type="text" value="name"></td>'+
-                '<td>' +
-                '<select name="SoapFunctionParam['+window.count_params+'][type]" id="SoapFunctionParam_'+window.count_params+'_type">'+
-                '<option value="string" selected="selected">string</option>'+
-                '<option value="integer">integer</option>'+
-                '<option value="bool">bool</option>'+
-                '<option value="array">array</option>'+
-                '<option value="date">date</option>'+
-                '</select>' +
-                '</td>'+
-                '<td><input name="SoapFunctionParam[country][description]" id="SoapFunctionParam_country_description" type="text"></td>'+
-                '<td><button class="del-output-param btn btn-primary" name="yt'+window.count_params+'" type="button">Удалить</button></td>'+
-            '</tr>'
-        );
-        $('tr.param-'+window.count_params+' button.del-output-param').on('click', del_param);
-        window.count_params++;
+                var b = $('button.del-output-param');
+                b.off('click');
+                b.on('click', del_param);
+            },
+            type: 'get',
+            url: '/function/add_param_field',
+            data: {
+                type: type_of_data,
+                index: window.count_params++,
+                input_param: false
+            },
+            cache: false,
+            dataType: 'html'
+        });
+        return false;
     });
 
-    $('button.add-input-param').on('click', function(){
+    $('div.add-input-param ul li a').click(function(){
+        var type_of_data = $(this).data('type-of-data');
+        $.ajax({
+            success: function(html){
+                $('table.input-params').append(html);
 
-        var name = 'SoapFunctionParam['+window.count_params+'][name]';
-        var id = 'SoapFunctionParam_'+window.count_params+'_name';
-
-        $('table.input-params').append(
-            '<tr class="param-'+window.count_params+'">' +
-                '<td><input name="'+name+'" id="'+id+'" type="text" value="name"></td>'+
-                '<td>' +
-                '<select name="SoapFunctionParam['+window.count_params+'][type]" id="SoapFunctionParam_'+window.count_params+'_type">'+
-                '<option value="string" selected="selected">string</option>'+
-                '<option value="integer">integer</option>'+
-                '<option value="bool">bool</option>'+
-                '<option value="array">array</option>'+
-                '<option value="date">date</option>'+
-                '</select>' +
-                '</td>'+
-                '<td><input name="SoapFunctionParam[country][description]" id="SoapFunctionParam_country_description" type="text"></td>'+
-                '<td><button class="del-input-param btn btn-primary" name="yt'+window.count_params+'" type="button">Удалить</button></td>'+
-                '</tr>'
-        );
-        $('tr.param-'+window.count_params+' button.del-input-param').on('click', del_param);
-        window.count_params++;
+                var b = $('button.del-input-param');
+                b.off('click');
+                b.on('click', del_param);
+            },
+            type: 'get',
+            url: '/function/add_param_field',
+            data: {
+                type: type_of_data,
+                index: window.count_params++,
+                input_param: true
+            },
+            cache: false,
+            dataType: 'html'
+        });
+        return false;
     });
+
 
     $('button.del-output-param').on('click', del_param);
     $('button.del-input-param').on('click', del_param);
 
     function del_param(){
+        console.log($(this));
         var tr = $(this).parents('tr');
         tr.remove();
     }

@@ -129,11 +129,34 @@
             ),
             array(
                 'class'=> 'bootstrap.widgets.TbButtonColumn',
-                'header' => 'Тесты',
-                'template'=>'{run_tests} {update} {view} {delete}',
+                'header' => 'Функция',
+                'template'=>'{update} {view} {delete}',
                 'deleteConfirmation' => false,
-                'buttons'=>array
-                (
+                'buttons' => array(
+                    'update' => array
+                    (
+                        'label' => 'Редактирование параметров функции',
+                        'url' => 'Yii::app()->createUrl("function/update", array("id"=>$data["id"]))',
+                    ),
+                    'view' => array
+                    (
+                        'label' => 'Просмотр функции',
+                        'url' => 'Yii::app()->createUrl("function/view", array("id"=>$data["id"]))',
+                    ),
+                    'delete' => array
+                    (
+                        'label' => 'Удалить функцию',
+                        'url' => 'Yii::app()->createUrl("function/delete", array("id"=>$data["id"]))',
+                    ),
+                ),
+            ),
+
+            array(
+                'class'=> 'bootstrap.widgets.TbButtonColumn',
+                'header' => 'Тесты',
+                'template'=>'{run_tests} {view}',
+                'deleteConfirmation' => false,
+                'buttons' => array(
                     'run_tests' => array
                     (
                         'visible' => function($ind, $row){
@@ -143,24 +166,19 @@
                         'icon' => 'icon-play-circle',
 //                    'url' => 'Yii::app()->createUrl("function/run_tests", array("id"=>$data["id"]))',
                     ),
-                    'update' => array
-                    (
-                        'label' => 'Редактирование параметров функции',
-                        'url' => 'Yii::app()->createUrl("function/update", array("id"=>$data["id"]))',
-                    ),
                     'view' => array
                     (
                         'label' => 'Просмотр тестов',
                         'url' => 'Yii::app()->createUrl("test/list", array("func_id"=>$data["id"]))',
                     ),
-                    'delete' => array
-                    (
-                        'visible' => function($ind, $row){
-                            return ($row['count_tests'] > 0);
-                        },
-                        'label' => 'Удалить тесты',
-                        'url' => 'Yii::app()->createUrl("function/delete_tests", array("id"=>$data["id"]))',
-                    ),
+//                    'delete' => array
+//                    (
+//                        'visible' => function($ind, $row){
+//                            return ($row['count_tests'] > 0);
+//                        },
+//                        'label' => 'Удалить тесты',
+//                        'url' => 'Yii::app()->createUrl("function/delete_tests", array("id"=>$data["id"]))',
+//                    ),
                 ),
 
             ),

@@ -39,6 +39,9 @@ class CreateAction extends CAction
         }
 
         $class = get_class($model);
+        $input_params = array();
+        $output_params = array();
+
         if (isset($_POST[$class]) && !empty($_POST[$class])) {
             $model->attributes = $_POST[$class];
             if($model->validate()){
@@ -59,7 +62,8 @@ class CreateAction extends CAction
             array(
                 'model' => $model,
                 'service' => $service,
-                'function_params' => $model->soapFunctionParams
+                'input_params' => $input_params,
+                'output_params' => $output_params,
             )
         );
 	}

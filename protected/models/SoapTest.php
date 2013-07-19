@@ -2,7 +2,9 @@
 class CSoapTestException extends CException {}
 
 /**
- *  Модель для проведения тестов. Тест принадлежит определенной функции SOAP сервиса.
+ * Модель для проведения тестов. Тест принадлежит определенной функции SOAP сервиса.
+ *
+ * Тест проходит обязательную валидацию входных и выходных данных.
  *
  *  @author Skibardin A.A. <skybardpf@artektiv.ru>
  *
@@ -19,6 +21,7 @@ class CSoapTestException extends CException {}
  *  @property $test_result  int
  *  @property $args         string
  *  @property $last_return  string
+ *  @property $last_errors  string
  *
  *  @property $soapFunction SoapFunction
  */
@@ -129,16 +132,41 @@ class SoapTest extends CActiveRecord {
     }
 
     /**
-     * Запускаем Unit-тест на выполнение.
-     * @param bool $force Если TRUE, тест запускается даже, если он уже запущен.
-     * @return bool Если false, значит тест уже выполняется.
+     * @return boolean
      */
-    public function run($force = false)
+    public function is_running()
     {
-        if (!$force && $this->status == self::STATUS_TEST_RUN){
-            return false;
-        }
+        return ($this->status == self::STATUS_TEST_RUN);
+    }
 
+    /**
+     * @param array $errors
+     * @return string
+     */
+    private function formatErrorMessages($errors)
+    {
+        $message = '';
+        if (!empty($errors['not_found'])){
+            $message .= 'Не найдены поля:<br/>'.implode('<br/>', $errors['not_found']).'<br/>';
+        }
+        if (!empty($errors['required'])){
+            $message .= 'Не заполнены обязательные поля:<br/>'.implode('<br/>', $errors['required']).'<br/>';
+        }
+        if (!empty($errors['wrong_data_type'])){
+            $message .= 'Неправильные типы данных:<br/>';
+            foreach ($errors['wrong_data_type'] as $err){
+                $message .= 'Поле {'.$err['key'].'} должно быть - '.$err['type_of_data'].'<br/>';
+            }
+            $message .= '<br/>';
+        }
+        return $message;
+    }
+
+    /**
+     * Запускаем Unit-тест на выполнение.
+     */
+    public function run()
+    {
         $test_result = self::TEST_RESULT_NOT_EXECUTED;
         $this->date_start = time();
         $this->date_end = NULL;
@@ -147,21 +175,21 @@ class SoapTest extends CActiveRecord {
         $this->save();
 
         try {
-            if($this->soapFunction->type == 'delete'){
-                $args = CJSON::decode($this->args);
-                if (!isset($args[0])){
-                    throw new CSoapTestException('Переданан неправильный формат аргументов в функцию.');
-                }
-                $errors = $this->soapFunction->checkParams($args[0]);
-                if (!empty($errors)){
-                    throw new CSoapTestException('Переданы неправильные параметры:<br/>' . implode('<br/>', $errors));
-                }
+            $errors = $this->soapFunction->checkBeforeRequest($this);
+            if (!empty($errors)){
+                $message = 'Переданы неправильные параметры:<br/>';
+                $message .= $this->formatErrorMessages($errors);
+                throw new CSoapTestException($message);
             }
 
-            if (!$this->soapFunction->soapService->isAvailableService()){
+            /**
+             * @var $service SoapService
+             */
+            $service = $this->soapFunction->groupFunctions->soapService;
+            if (!$service->isAvailableService()){
                 throw new CSoapTestException('SOAP сервис не доступен.');
             }
-            $soapClient = $this->soapFunction->soapService->getSoapClient();
+            $soapClient = $service->getSoapClient();
             if (!$soapClient){
                 throw new CSoapTestException('Не является WSDL сервисом.');
             }
@@ -176,43 +204,11 @@ class SoapTest extends CActiveRecord {
                 }
                 $return = $return->return;
 
-                if (in_array($this->soapFunction->type, array('get', 'list'))){
-                    $ret = CJSON::decode($return);
-                    $errors = array();
-                    if ($this->soapFunction->type == 'list'){
-                        if (empty($ret)){
-                            throw new CSoapTestException('Получен неизвестный результат функции.');
-                        }
-//                        foreach($ret as $p){
-//                            var_dump($p);die;
-                            $errors = $this->soapFunction->checkParams($ret[0]);
-//                        }
-                    } elseif ($this->soapFunction->type == 'get'){
-                        if (!empty($ret)){
-                            if (!isset($ret[0])){
-                                throw new CSoapTestException('Получен неизвестный результат функции.');
-                            }
-                            $errors = $this->soapFunction->checkParams($ret[0]);
-                        }
-                    }
-                    if (!empty($errors)){
-                        throw new CSoapTestException('Ошибки:<br/>' . implode('<br/>', $errors).'<br/>Результат:<br/>'.$return);
-                    }
-                } elseif ($this->soapFunction->type == 'save'){
-//                    if (!ctype_digit($return)){
-//                        throw new CSoapTestException('Ошибки при сохранении данных.<br/>Результат:<br/>'.$return);
-//                    }
-//                    $args = CJSON::decode($this->args);
-//                    $ret = $this->soapFunction->checkParams($args);
-//                    if (!empty($ret)){
-//                        throw new CSoapTestException('Ошибки в передаваемых параметрах:<br/>' . implode('<br/>', $ret));
-//                    }
-
-
-                } elseif($this->soapFunction->type == 'delete'){
-                    if (!is_bool($return)){
-                        throw new CSoapTestException('Ответ не boolean:<br/>Результат:<br/>'.$return);
-                    }
+                $errors = $this->soapFunction->checkAfterRequest($return);
+                if (!empty($errors)){
+                    $message = 'Ошибки в выходных данных:<br/>';
+                    $message .= $this->formatErrorMessages($errors);
+                    throw new CSoapTestException($message);
                 }
 
             } catch (SoapFault $e) {
@@ -228,8 +224,6 @@ class SoapTest extends CActiveRecord {
         $this->status = self::STATUS_TEST_STOP;
         $this->test_result = ($test_result != self::TEST_RESULT_ERROR) ?  self::TEST_RESULT_OK : $test_result;
         $this->save();
-
-        return true;
     }
 
     /**

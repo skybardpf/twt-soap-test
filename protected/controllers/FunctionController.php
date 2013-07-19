@@ -21,6 +21,10 @@ class FunctionController extends Controller
             'update' => array(
                 'class' => 'application.controllers.function.UpdateAction',
             ),
+            'delete' => array(
+                'class' => 'application.controllers.function.DeleteAction',
+            ),
+
             'run_tests' => array(
                 'class' => 'application.controllers.function.Run_testsAction',
             ),
@@ -29,6 +33,10 @@ class FunctionController extends Controller
             ),
             'delete_tests' => array(
                 'class' => 'application.controllers.function.Delete_testsAction',
+            ),
+
+            'add_param_field' => array(
+                'class' => 'application.controllers.function.AddParamFieldAction',
             ),
 		);
 	}
