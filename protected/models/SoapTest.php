@@ -1,4 +1,8 @@
 <?php
+/**
+ * Class CSoapTestException.
+ * Отлавливаем ошибки связанные с тестирование SOAP функций.
+ */
 class CSoapTestException extends CException {}
 
 /**
@@ -11,19 +15,19 @@ class CSoapTestException extends CException {}
  *  @see SoapFunction
  *  @see SoapService
  *
- *  @property $id           int
- *  @property $name         string
- *  @property $function_id  int
- *  @property $date_create  int timestamp
- *  @property $date_start   int timestamp
- *  @property $date_end     int timestamp
- *  @property $status       int
- *  @property $test_result  int
- *  @property $args         string
- *  @property $last_return  string
- *  @property $last_errors  string
+ *  @property integer       $id
+ *  @property string        $name
+ *  @property integer       $function_id
+ *  @property integer       $date_create    timestamp
+ *  @property integer       $date_start     timestamp
+ *  @property integer       $date_end       timestamp
+ *  @property integer       $status
+ *  @property integer       $test_result
+ *  @property string        $args
+ *  @property string        $last_return
+ *  @property string        $last_errors
  *
- *  @property $soapFunction SoapFunction
+ *  @property SoapFunction  $soapFunction
  */
 class SoapTest extends CActiveRecord {
     const STATUS_TEST_STOP          = 1;
@@ -50,11 +54,9 @@ class SoapTest extends CActiveRecord {
                 function_id,
                 date_start,
                 status,
-                ( CASE STATUS
-                    WHEN '.self::TEST_RESULT_ERROR.' THEN (date_end - date_start)
-                    WHEN '.self::TEST_RESULT_OK.' THEN (date_end - date_start)
-                    WHEN '.self::TEST_RESULT_NOT_EXECUTED.' THEN 0
-                    END
+                IF (
+                    STATUS='.self::TEST_RESULT_ERROR.' OR STATUS= '.self::TEST_RESULT_OK.',
+                    (TIME_TO_SEC(TIMEDIFF(date_end, date_start))), 0
                 ) AS `runtime`,
                 test_result,
                 last_return,
@@ -163,6 +165,23 @@ class SoapTest extends CActiveRecord {
     }
 
     /**
+     * Сохраням даты в нужном формате.
+     */
+    public function beforeSave()
+    {
+        if ($this->isNewRecord){
+            $this->date_create = date('Y-m-d H:i:s', $this->date_create);
+        }
+        if (!is_null($this->date_start) && is_integer($this->date_start)){
+            $this->date_start = date('Y-m-d H:i:s', $this->date_start);
+        }
+        if (!is_null($this->date_end) && is_integer($this->date_end)){
+            $this->date_end = date('Y-m-d H:i:s', $this->date_end);
+        }
+        return parent::beforeSave();
+    }
+
+    /**
      * Запускаем Unit-тест на выполнение.
      */
     public function run()
@@ -183,7 +202,7 @@ class SoapTest extends CActiveRecord {
             }
 
             /**
-             * @var $service SoapService
+             * @var SoapService $service
              */
             $service = $this->soapFunction->groupFunctions->soapService;
             if (!$service->isAvailableService()){

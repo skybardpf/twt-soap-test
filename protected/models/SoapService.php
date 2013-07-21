@@ -106,7 +106,7 @@ class SoapService extends CActiveRecord
                 t.runtime
             FROM '.SoapService::model()->tableName().' s
             LEFT JOIN (
-                SELECT f.service_id,
+                SELECT gf.service_id,
                    COUNT( * ) AS count,
                    SUM( CASE status
                         WHEN '.SoapTest::STATUS_TEST_RUN.' THEN 1
@@ -123,7 +123,8 @@ class SoapService extends CActiveRecord
                    MAX( test_result ) AS test_result
                 FROM '.SoapTest::model()->tableName().' t
                 JOIN '.SoapFunction::model()->tableName().' f ON t.function_id = f.id
-                GROUP BY f.service_id
+                JOIN '.GroupFunctions::model()->tableName().' gf ON f.group_id = gf.id
+                GROUP BY gf.service_id
             ) t ON t.service_id = s.id
             '
         );

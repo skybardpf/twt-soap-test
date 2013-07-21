@@ -9,6 +9,7 @@
  * @property string     $name
  * @property boolean    $input_param           input (true) | output (false)
  * @property string     $type_of_data
+ * @property string     $array_type_of_data     Для массивов: Тип данных значений массивов.
  * @property boolean    $required
  * @property string     $description
  *
@@ -22,6 +23,10 @@ class SoapFunctionParam extends CActiveRecord
     const TYPE_DATA_ARRAY = 'array';
     const TYPE_DATA_DATE = 'date';
     const TYPE_DATA_TABLE = 'table';
+
+    const TYPE_DATA_ARRAY_VALUES= 'array_values';
+    const TYPE_DATA_FIELD_VALUE = 'field_value';
+    const TYPE_DATA_ARRAY_FIELDS = 'array_fields';
 
     const TYPE_INPUT = 1;
     const TYPE_OUTPUT = 0;
@@ -92,6 +97,7 @@ class SoapFunctionParam extends CActiveRecord
             'name' => 'Название параметра',
 			'input_param' => 'Входной/Выходной параметр',
 			'type_of_data' => 'Тип данных',
+			'array_type_of_data' => 'Тип данных массива',
 			'required' => 'Рекомендуемое поле',
 			'description' => 'Описание',
 		);
@@ -110,6 +116,11 @@ class SoapFunctionParam extends CActiveRecord
             self::TYPE_DATA_DATE => 'Дата (Date)',
             self::TYPE_DATA_ARRAY => 'Массив (Array)',
             self::TYPE_DATA_TABLE => 'Таблица (Table)',
+
+            self::TYPE_DATA_FIELD_VALUE => 'Поле:Значение',
+
+            self::TYPE_DATA_ARRAY_VALUES => 'Массив значений',
+            self::TYPE_DATA_ARRAY_FIELDS => 'Массив Поле:Значение',
        );
     }
 }

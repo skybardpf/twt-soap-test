@@ -41,4 +41,32 @@ class TestController extends Controller
         }
         return $model;
     }
+
+    /**
+     * @param SoapFunction $function
+     * @return SoapTest
+     * @throws CHttpException
+     */
+    public function createModel(SoapFunction $function)
+    {
+        $model = new SoapTest();
+        $model->soapFunction = $function;
+        $model->function_id = $function->primaryKey;
+        $model->date_create = time();
+        return $model;
+    }
+
+    /**
+     * @param int $func_id
+     * @return SoapFunction
+     * @throws CHttpException
+     */
+    public function loadFunction($func_id)
+    {
+        $function = SoapFunction::model()->findByPk($func_id);
+        if ($function === null) {
+            throw new CHttpException(404, 'Функция не найдена.');
+        }
+        return $function;
+    }
 }

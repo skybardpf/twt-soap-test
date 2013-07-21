@@ -54,17 +54,6 @@ return array(
 			'class' => 'CFileCache'
 		),
 
-		'db'=>array(
-//			'connectionString' => 'sqlite:'.dirname(__FILE__).'/../data/soap-test.db',
-			'connectionString' => 'mysql:host=localhost;dbname=twt_soap_test;',
-            'username'=>'root',
-            'password'=>'123456',
-
-			'schemaCachingDuration' => YII_DEBUG ? 10 : 3600,
-			'enableParamLogging' => YII_DEBUG,
-			'enableProfiling' => YII_DEBUG
-		),
-
 		'errorHandler'=>array(
 			'errorAction'=>'site/error',
 		),

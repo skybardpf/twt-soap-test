@@ -31,6 +31,7 @@ class RunAction extends CAction
             $test->run();
 
             $format = new CFormatter();
+//            var_dump($test->date_start);die;
             if (Yii::app()->request->isAjaxRequest) {
                 echo CJSON::encode(array(
                     'success' => true,
@@ -38,14 +39,14 @@ class RunAction extends CAction
                         'last_return' => $format->formatHtml(mb_strlen($test->last_return) > 1000 ? mb_substr($test->last_return, 0, 1000)."…" : $test->last_return),
                         'test_result' => $test->test_result,
                         'date_start' => Yii::app()->dateFormatter->format('dd MMMM yyyy HH:mm:ss', $test->date_start),
-                        'runtime' => ($test->test_result == SoapTest::TEST_RESULT_OK)
-                            ? ($test->date_end - $test->date_start)
+                        'runtime' => ($test->test_result == SoapTest::TEST_RESULT_OK || $test->test_result == SoapTest::TEST_RESULT_ERROR)
+                            ? abs(strtotime($test->date_end) - strtotime($test->date_start))
                             : 0,
                     )
                 ));
                 Yii::app()->end();
             }
-            return true;
+//            return true;
 
         } catch(CException $e){
             if (Yii::app()->request->isAjaxRequest) {
@@ -58,6 +59,6 @@ class RunAction extends CAction
                 throw new CHttpException(500, $e->getMessage());
             }
         }
-        return false;
+//        return false;
 	}
 }
