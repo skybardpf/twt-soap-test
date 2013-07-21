@@ -193,7 +193,7 @@ class SoapTest extends CActiveRecord {
         $test_result = self::TEST_RESULT_NOT_EXECUTED;
         $this->date_start = time();
         $this->date_end = NULL;
-        $this->status = self::STATUS_TEST_RUN;
+//        $this->status = self::STATUS_TEST_RUN;
         $this->test_result = $test_result;
         $this->last_return = $last_return;
         $this->last_errors = $last_errors;
@@ -221,11 +221,14 @@ class SoapTest extends CActiveRecord {
 
             try {
                 $return = $soapClient->__soapCall($this->soapFunction->name, (array)json_decode($this->args, true));
-                if (empty($return) || !isset($return->return) || empty($return->return)){
+                if (empty($return) || !isset($return->return)){
                     throw new CSoapTestException('Не получен результат функции.');
                 }
                 if (is_string($return->return) && stripos($return->return, 'error') !== false){
                     throw new CSoapTestException($return->return);
+                }
+                if ($this->soapFunction->type != SoapFunction::FUNCTION_TYPE_DELETE && empty($return->return)){
+                    throw new CSoapTestException('Получен пустой результат функции.');
                 }
                 $last_return = $return->return;
 

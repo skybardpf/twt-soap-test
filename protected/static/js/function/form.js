@@ -2,6 +2,8 @@
  *  @var {Number} window.count_params
  */
 $(document).ready(function(){
+    var array_index = [];
+
     $('div.add-output-param ul li a').click(function(){
         var type_of_data = $(this).data('type-of-data');
         $.ajax({
@@ -11,13 +13,18 @@ $(document).ready(function(){
                 var b = $('button.del-output-param');
                 b.off('click');
                 b.on('click', del_param);
+
+                b = $('.table.output-params div.add-array-value ul li a');
+                b.off('click');
+                b.on('click', click_add_output_child_param);
             },
             type: 'get',
             url: '/function/add_param_field',
             data: {
                 type: type_of_data,
                 index: window.count_params++,
-                input_param: false
+                input_param: false,
+                child: false
             },
             cache: false,
             dataType: 'html'
@@ -35,16 +42,17 @@ $(document).ready(function(){
                 b.off('click');
                 b.on('click', del_param);
 
-                b = $('.table.input-params .add-array-value ul li a');
+                b = $('.table.input-params div.add-array-value ul li a');
                 b.off('click');
-                b.on('click', click_child_add_param);
+                b.on('click', click_add_input_child_param);
             },
             type: 'get',
             url: '/function/add_param_field',
             data: {
                 type: type_of_data,
                 index: window.count_params++,
-                input_param: true
+                input_param: true,
+                child: false
             },
             cache: false,
             dataType: 'html'
@@ -52,33 +60,67 @@ $(document).ready(function(){
         return false;
     });
 
-    /**
-     * Добавить значение для массива.
-     */
-    function click_child_add_param(){
+    function click_add_input_child_param(){
         var type_of_data = $(this).data('type-of-data');
-//        var index = window.count_params;
-//        window.count_params++;
-
         var tr = $(this).parents('table.input-params tr');
         var index = $(tr).data('param-index');
-        console.log($(tr));
-        console.log(index);
+
+        if (array_index[index] === undefined){
+            array_index[index] = 0;
+        } else {
+            array_index[index]++;
+        }
 
         $.ajax({
             success: function(html){
                 $('table.parent-param-'+index).append(html);
 
-                var b = $('button.del-output-param');
+                var b = $('button.del-input-child-param');
                 b.off('click');
-                b.on('click', del_param);
+                b.on('click', del_param_child);
             },
             type: 'get',
             url: '/function/add_param_field',
             data: {
                 type: type_of_data,
-                index: window.count_params++,
-                input_param: false
+                index: index,
+                input_param: true,
+                child: true,
+                child_index: array_index[index]
+            },
+            cache: false,
+            dataType: 'html'
+        });
+        return false;
+    }
+
+    function click_add_output_child_param(){
+        var type_of_data = $(this).data('type-of-data');
+        var tr = $(this).parents('table.output-params tr');
+        var index = $(tr).data('param-index');
+
+        if (array_index[index] === undefined){
+            array_index[index] = 0;
+        } else {
+            array_index[index]++;
+        }
+
+        $.ajax({
+            success: function(html){
+                $('table.parent-param-'+index).append(html);
+
+                var b = $('button.del-output-child-param');
+                b.off('click');
+                b.on('click', del_param_child);
+            },
+            type: 'get',
+            url: '/function/add_param_field',
+            data: {
+                type: type_of_data,
+                index: index,
+                input_param: false,
+                child: true,
+                child_index: array_index[index]
             },
             cache: false,
             dataType: 'html'
@@ -89,20 +131,21 @@ $(document).ready(function(){
     $('button.del-output-param').on('click', del_param);
     $('button.del-input-param').on('click', del_param);
 
+    $('button.del-input-child-param').on('click', del_param_child);
+    $('button.del-output-child-param').on('click', del_param_child);
+
+    $('.table.input-params .add-array-value ul li a').on('click', click_add_input_child_param);
+    $('.table.output-params .add-array-value ul li a').on('click', click_add_output_child_param);
+
     function del_param(){
-        console.log($(this));
         var tr = $(this).parents('tr');
         var index = $(tr).data('param-index');
-//        $('tr.child-params-'+index).remove();
         tr.remove();
+        $('tr.child-params-'+index).remove();
     }
 
     function del_param_child(){
-        console.log($(this));
-        console.log('del_param_child');
-//        var tr = $(this).parents('tr');
-//        var index = $(tr).data('param-index');
-//        $('tr.child-params-'+index).remove();
-//        tr.remove();
+        var index = $(this).data('child-index');
+        $('tr.tr-child-index-'+index).remove();
     }
 });

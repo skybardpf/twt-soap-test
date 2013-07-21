@@ -44,12 +44,23 @@ class UpdateAction extends CAction
                     $p->attributes = $_POST[$class_func_param][$i];
                     $p->function_id = $model->primaryKey;
 
+                    if (isset($_POST[$class_func_param][$i]['__children__'])){
+                        $parent = $_POST[$class_func_param][$i]['__children__'];
+                        foreach($parent as $j=>$attr){
+                            $child = new SoapFunctionParam();
+                            $child->attributes = $attr;
+                            $child->function_id = $model->primaryKey;
+                            $p->children[$j] = $child;
+
+                            $valid = $child->validate() && $valid;
+                        }
+                    }
+
                     if ($p->input_param){
                         $input_params[$i] = $p;
                     } else {
                         $output_params[$i] = $p;
                     }
-
                     $valid = $p->validate() && $valid;
                 }
             }
@@ -66,12 +77,26 @@ class UpdateAction extends CAction
                          */
                         foreach ($input_params as $p){
                             $p->save();
+                            /**
+                             * @var $child SoapFunctionParam
+                             */
+                            foreach($p->children as $child){
+                                $child->parent_name = $p->name;
+                                $child->save();
+                            }
                         }
                         /**
                          * @var $p SoapFunctionParam
                          */
                         foreach ($output_params as $p){
                             $p->save();
+                            /**
+                             * @var $child SoapFunctionParam
+                             */
+                            foreach($p->children as $child){
+                                $child->parent_name = $p->name;
+                                $child->save();
+                            }
                         }
 
                         $controller->redirect(
@@ -88,14 +113,17 @@ class UpdateAction extends CAction
         } else {
             $i = 0;
             foreach ($model->soapFunctionParams as $p){
-                if ($p->input_param){
-                    $input_params[$i] = $p;
-                } else {
-                    $output_params[$i] = $p;
-                }
-                $i++;
-            }
+                if (empty($p->parent_name)){
+                    $p->children = $p->getChildren();
 
+                    if ($p->input_param){
+                        $input_params[$i] = $p;
+                    } else {
+                        $output_params[$i] = $p;
+                    }
+                    $i++;
+                }
+            }
         }
 
         $controller->render(

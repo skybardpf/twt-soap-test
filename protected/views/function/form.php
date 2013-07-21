@@ -50,7 +50,7 @@
     $this->widget('bootstrap.widgets.TbButton', array(
         'buttonType' => 'link',
         'label' => 'Отмена',
-        'url' => $this->createUrl('function/list', array('service_id' => $service->primaryKey)),
+        'url' => $this->createUrl('list', array('service_id' => $service->primaryKey)),
     ));
     echo '<br/><br/>';
 
@@ -81,10 +81,19 @@
         </tr>
         <?php
             foreach($input_params as $i=>$item){
-                $this->renderPartial('_add_param_field', array(
-                    'model' => $item,
-                    'index' => $i,
-                ));
+                if (empty($item->children)){
+                    $this->renderPartial('_add_param_field', array(
+                        'model' => $item,
+                        'index' => $i,
+                        'child' => false,
+                        'child_index' => -1
+                    ));
+                } else {
+                    $this->renderPartial('_add_param_child_field', array(
+                        'model' => $item,
+                        'index' => $i,
+                    ));
+                }
             }
         ?>
     </table>
@@ -130,10 +139,19 @@
         </tr>
         <?php
             foreach($output_params as $i=>$item){
-                $this->renderPartial('_add_param_field', array(
-                    'model' => $item,
-                    'index' => $i,
-                ));
+                if (empty($item->children)){
+                    $this->renderPartial('_add_param_field', array(
+                        'model' => $item,
+                        'index' => $i,
+                        'child' => false,
+                        'child_index' => -1
+                    ));
+                } else {
+                    $this->renderPartial('_add_param_child_field', array(
+                        'model' => $item,
+                        'index' => $i,
+                    ));
+                }
             }
         ?>
     </table>

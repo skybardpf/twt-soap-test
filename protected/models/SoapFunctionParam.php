@@ -9,6 +9,7 @@
  * @property integer    $id
  * @property integer    $function_id
  * @property string     $name
+ * @property string     $parent_name
  * @property boolean    $input_param           input (true) | output (false)
  * @property string     $type_of_data
  * @property string     $array_type_of_data     Для массивов: Тип данных значений массивов.
@@ -30,9 +31,16 @@ class SoapFunctionParam extends CActiveRecord
     const TYPE_DATA_FIELD_VALUE = 'field_value';
     const TYPE_DATA_ARRAY_FIELDS = 'array_fields';
     const TYPE_DATA_ARRAY_ID_INDEX_TYPE_INDEX = 'array_id_index_type_index';
+    const TYPE_DATA_ARRAY_ELEMENTS_STRUCTURE = 'array_elements_structure';
 
     const TYPE_INPUT = 1;
     const TYPE_OUTPUT = 0;
+
+    /**
+     * @var array $children Список параметров, которые принадлежат текущему параметру.
+     * Различные виды массивов.
+     */
+    public $children = array();
 
 	/**
 	 * Returns the static model of the specified AR class.
@@ -122,6 +130,7 @@ class SoapFunctionParam extends CActiveRecord
                 self::TYPE_DATA_ARRAY_VALUES => 'Массив значений',
                 self::TYPE_DATA_ARRAY_ID_INDEX_TYPE_INDEX => 'Массив ID(Индекс)-TYPE(Индекс)',
                 self::TYPE_DATA_ARRAY_FIELDS => 'Массив Поле:Значение',
+                self::TYPE_DATA_ARRAY_ELEMENTS_STRUCTURE => 'Массив ElementsStructure',
             )
        );
     }
@@ -149,5 +158,21 @@ class SoapFunctionParam extends CActiveRecord
     public static function isNativeType($type)
     {
         return in_array($type, array_keys(self::getNativeTypesOfData()));
+    }
+
+    /**
+     * @return SoapFunctionParam[]
+     */
+    public function getChildren()
+    {
+        $data = $this->findAll(
+            'function_id=:function_id AND input_param=:input_param AND parent_name=:parent_name',
+            array(
+                ':function_id' => $this->function_id,
+                ':input_param' => $this->input_param,
+                ':parent_name' => $this->name,
+            )
+        );
+        return $data;
     }
 }
