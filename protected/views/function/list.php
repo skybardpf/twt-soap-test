@@ -16,6 +16,7 @@
 
     $this->breadcrumbs=array(
         'Сервисы' => $this->createUrl('/service/list'),
+        'Группы функций' => $this->createUrl('/group_functions/list', array('service_id' => $service->primaryKey)),
         'Функции'
     );
     $this->pageTitle = 'Функции сервиса «'.$service->name.'»';
@@ -32,21 +33,9 @@
     $this->widget('bootstrap.widgets.TbButton', array(
         'buttonType' => 'link',
         'type' => 'success',
-        'label' => 'Добавить группу',
-        'url' => $this->createUrl("group_functions/create", array('service_id' => $service->primaryKey)),
+        'label' => 'Управление группами функций',
+        'url' => $this->createUrl("group_functions/list", array('service_id' => $service->primaryKey)),
     ));
-?>
-
-<!--<div class="alert alert-info">-->
-<!--	Чтобы обновить список функций, <a href="--><?//=$this->createUrl('service/update', array('id' => $service->id))?><!--">отредактируйте сервис «--><?//=$service->name?><!--»</a>.-->
-<!--</div>-->
-
-<?//= CHtml::tag('div', array('class' => 'alert_runtests hidden'),
-//        CHtml::tag('div', array('class' => 'alert alert-info'), 'Есть запущенные тесты')
-//    );
-//?>
-
-<?php
 
     $data = new CArrayDataProvider($data, array(
         'keyField' => 'id',
@@ -149,7 +138,6 @@
                     ),
                 ),
             ),
-
             array(
                 'class'=> 'bootstrap.widgets.TbButtonColumn',
                 'header' => 'Тесты',
@@ -170,16 +158,7 @@
                         'label' => 'Просмотр тестов',
                         'url' => 'Yii::app()->createUrl("test/list", array("func_id"=>$data["id"]))',
                     ),
-//                    'delete' => array
-//                    (
-//                        'visible' => function($ind, $row){
-//                            return ($row['count_tests'] > 0);
-//                        },
-//                        'label' => 'Удалить тесты',
-//                        'url' => 'Yii::app()->createUrl("function/delete_tests", array("id"=>$data["id"]))',
-//                    ),
                 ),
-
             ),
         ),
     ));

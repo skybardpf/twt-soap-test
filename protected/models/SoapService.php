@@ -107,26 +107,24 @@ class SoapService extends CActiveRecord
             FROM '.SoapService::model()->tableName().' s
             LEFT JOIN (
                 SELECT gf.service_id,
-                   COUNT( * ) AS count,
-                   SUM( CASE status
+                    COUNT(*) AS count,
+                    SUM( CASE status
                         WHEN '.SoapTest::STATUS_TEST_RUN.' THEN 1
                         WHEN '.SoapTest::STATUS_TEST_IN_QUEUE.' THEN 1
                         WHEN '.SoapTest::STATUS_TEST_STOP.' THEN 0
-                   END ) AS count_running,
-                   SUM( CASE status
-                        WHEN '.SoapTest::STATUS_TEST_STOP.'
-                        THEN( date_end - date_start )
-                        ELSE 0
-                   END ) AS runtime,
-                   MIN( date_start ) AS date_start,
-                   MAX( status ) AS status,
-                   MAX( test_result ) AS test_result
+                    END ) AS count_running,
+                    SUM(
+                        IF(status='.SoapTest::STATUS_TEST_STOP.',
+                        TIME_TO_SEC(TIMEDIFF(date_end, date_start)), 0)
+                    ) AS runtime,
+                    MIN(date_start) AS date_start,
+                    MAX(status) AS status,
+                    MAX(test_result) AS test_result
                 FROM '.SoapTest::model()->tableName().' t
                 JOIN '.SoapFunction::model()->tableName().' f ON t.function_id = f.id
                 JOIN '.GroupFunctions::model()->tableName().' gf ON f.group_id = gf.id
                 GROUP BY gf.service_id
-            ) t ON t.service_id = s.id
-            '
+            ) t ON t.service_id = s.id'
         );
 		return $cmd->queryAll();
 	}
@@ -267,14 +265,17 @@ class SoapService extends CActiveRecord
 	}
 
     /**
-     *  До удаление сервиса, удаляем все его функции и тесты по этим функциям.
+     *  До удаление сервиса, удаляем группы, функции и тесты по этим функциям.
      */
 	protected function beforeDelete()
 	{
-        foreach ($this->soapFunctions as $f) {
-            $f->delete();
+        if (parent::beforeDelete()){
+            foreach ($this->groupFunctions as $gf) {
+                $gf->delete();
+            }
+            return true;
         }
-		return parent::beforeDelete();
+		return false;
 	}
 
 	/**

@@ -1,32 +1,28 @@
 <?php
 /**
- * Добавление новой группу функции к SOAP сервису.
+ * Редактирование группы функции к SOAP сервису.
  *
  * @author Skibardin A.A. <skybardpf@artektiv.ru>
  *
  * @see SoapService
  * @see GroupFunctions
  */
-class CreateAction extends CAction
+class UpdateAction extends CAction
 {
     /**
-     * @param int $service_id
+     * @param integer $id
      * @throws CHttpException
      */
-    public function run($service_id)
+    public function run($id)
 	{
         /**
          * @var $controller Group_functionsController
          */
         $controller = $this->controller;
         /**
-         * @var $service SoapService
-         */
-        $service = $controller->loadService($service_id);
-        /**
          * @var $model GroupFunctions
          */
-        $model = $controller->createModel($service);
+        $model = $controller->loadModel($id);
 
         if(isset($_POST['ajax']) && $_POST['ajax']==='model-form-form') {
             echo CActiveForm::validate($model);
@@ -40,9 +36,9 @@ class CreateAction extends CAction
                 try {
                     $model->save();
                     $controller->redirect($controller->createUrl(
-                        'group_functions/list',
+                        'list',
                         array(
-                            'service_id' => $service->primaryKey
+                            'service_id' => $model->soapService->primaryKey
                         )
                     ));
                 } catch (CException $e){

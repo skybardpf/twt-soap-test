@@ -29,6 +29,7 @@ class SoapFunctionParam extends CActiveRecord
     const TYPE_DATA_ARRAY_VALUES= 'array_values';
     const TYPE_DATA_FIELD_VALUE = 'field_value';
     const TYPE_DATA_ARRAY_FIELDS = 'array_fields';
+    const TYPE_DATA_ARRAY_ID_INDEX_TYPE_INDEX = 'array_id_index_type_index';
 
     const TYPE_INPUT = 1;
     const TYPE_OUTPUT = 0;
@@ -115,10 +116,11 @@ class SoapFunctionParam extends CActiveRecord
         return array_merge(
             self::getNativeTypesOfData(),
             array(
-                self::TYPE_DATA_ARRAY => 'Массив (Array)',
+//                self::TYPE_DATA_ARRAY => 'Массив (Array)',
                 self::TYPE_DATA_TABLE => 'Таблица (Table)',
                 self::TYPE_DATA_FIELD_VALUE => 'Поле:Значение',
                 self::TYPE_DATA_ARRAY_VALUES => 'Массив значений',
+                self::TYPE_DATA_ARRAY_ID_INDEX_TYPE_INDEX => 'Массив ID(Индекс)-TYPE(Индекс)',
                 self::TYPE_DATA_ARRAY_FIELDS => 'Массив Поле:Значение',
             )
        );
@@ -135,7 +137,17 @@ class SoapFunctionParam extends CActiveRecord
             self::TYPE_DATA_INTEGER => 'Число (Integer)',
             self::TYPE_DATA_BOOLEAN => 'Булево (Boolean)',
             self::TYPE_DATA_DATE => 'Дата (Date)',
-//            self::TYPE_DATA_ARRAY => 'Массив (Array)',
+            self::TYPE_DATA_ARRAY => 'Массив (Array)',
         );
+    }
+
+    /**
+     * @static
+     * @param string $type
+     * @return boolean
+     */
+    public static function isNativeType($type)
+    {
+        return in_array($type, array_keys(self::getNativeTypesOfData()));
     }
 }

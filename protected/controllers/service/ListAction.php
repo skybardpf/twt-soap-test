@@ -1,9 +1,24 @@
 <?php
-
+/**
+ * Выводим список всех действующих SOAP сервисов.
+ *
+ * @author Skibardin A.A. <skybardpf@artektiv.ru>
+ *
+ * @see SoapService
+ */
 class ListAction extends CAction
 {
-	public function run()
+    /**
+     * Список SOAP сервисов.
+     */
+    public function run()
 	{
+        /**
+         * @var $controller ServiceController
+         */
+        $controller = $this->controller;
+        $controller->pageTitle .= 'Список SOAP сервисов';
+
         $data = SoapService::getList();
         $runningServiceTests = array();
         foreach($data as $k=>$v){

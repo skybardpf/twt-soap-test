@@ -27,6 +27,7 @@ $(document).ready(function(){
         tr.find('.td-runtime').text('---');
         tr.find('.td-date-start').text('---');
         tr.find('.td-last-return').text('---');
+        tr.find('.td-last-errors').text('---');
 
         runTest(id, function(ret, message, data){
             if (!ret){
@@ -86,6 +87,7 @@ $(document).ready(function(){
         tr.find('.td-runtime').text(data.runtime + ' сек.');
         tr.find('.td-date-start').text(data.date_start);
         tr.find('.td-last-return').text(data.last_return);
+        tr.find('.td-last-errors').html(data.last_errors);
     }
 
     function cssIconRun(icon, run){

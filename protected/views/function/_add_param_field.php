@@ -18,7 +18,7 @@
     </td>
     <td>
         <?php
-        if ($model->type_of_data == SoapFunctionParam::TYPE_DATA_ARRAY_VALUES){
+        if (in_array($model->type_of_data, array(SoapFunctionParam::TYPE_DATA_ARRAY_VALUES))){
             echo CHtml::activeDropDownList($model, '['.$index.']array_type_of_data', SoapFunctionParam::getNativeTypesOfData());
         } else {
             echo '---';

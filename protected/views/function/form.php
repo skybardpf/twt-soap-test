@@ -24,7 +24,8 @@
 
     $this->breadcrumbs = array(
         'Сервисы' => $this->createUrl('service/list'),
-        'Функции' => $this->createUrl('function/list', array('service_id' => $service->primaryKey)),
+        'Список групп' => $this->createUrl('/group_functions/list', array('service_id' => $service->primaryKey)),
+        'Список функций' => $this->createUrl('/function/list', array('service_id' => $service->primaryKey)),
     );
     if (!$model->isNewRecord){
         $this->breadcrumbs['Тесты функции'] = $this->createUrl('test/list', array('func_id' => $model->primaryKey));

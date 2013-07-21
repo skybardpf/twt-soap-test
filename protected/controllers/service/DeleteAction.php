@@ -1,20 +1,28 @@
 <?php
-
+/**
+ * Удаление SOAP сервиса.
+ *
+ * @author Skibardin A.A. <skybardpf@artektiv.ru>
+ */
 class DeleteAction extends CAction
 {
-//	/**
-//	 * @var CActiveRecord
-//	 */
-//	public $model = null;
-//
-//	public $view = 'delete';
-//
-	public function run($id)
+    /**
+     * @param integer $id
+     * @throws CHttpException
+     */
+    public function run($id)
 	{
-        $model = SoapService::model()->findByPk($id);
-        if (!$model) {
-            throw new CHttpException(404, 'Не найден сервис.');
-        }
+        /**
+         * @var $controller ServiceController
+         */
+        $controller = $this->controller;
+        $controller->pageTitle .= 'Удаление SOAP сервиса';
+
+        /**
+         * @var $model SoapService
+         */
+        $model = $controller->loadModel($id);
+
 		if (Yii::app()->request->isAjaxRequest) {
 			$model->delete();
 		} else {
@@ -22,17 +30,17 @@ class DeleteAction extends CAction
 				switch ($_POST['result']) {
 					case 'yes':
 						if ($model->delete()) {
-							$this->controller->redirect($this->controller->createUrl('list'));
+							$controller->redirect($controller->createUrl('list'));
 						} else {
 							throw new CHttpException(500, 'Не удалось удалить сервис.');
 						}
 						break;
 					default:
-						$this->controller->redirect($this->controller->createUrl('list'));
+						$controller->redirect($controller->createUrl('list'));
                     break;
 				}
 			}
-			$this->controller->render('delete', array('model' => $model));
+			$controller->render('delete', array('model' => $model));
 		}
 	}
 }

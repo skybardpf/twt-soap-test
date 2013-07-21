@@ -16,8 +16,9 @@
 
     $this->breadcrumbs = array(
         'Сервисы' => $this->createUrl('service/list'),
-        'Функции' => $this->createUrl('function/list', array('service_id' => $function->groupFunctions->soapService->primaryKey)),
-        'Параметры функции' => $this->createUrl('function/update', array('id' => $function->primaryKey)),
+        'Список групп' => $this->createUrl('/group_functions/list', array('service_id' => $function->groupFunctions->soapService->primaryKey)),
+        'Список функций' => $this->createUrl('/function/list', array('service_id' => $function->groupFunctions->soapService->primaryKey)),
+        'Карточка функции' => $this->createUrl('function/update', array('id' => $function->primaryKey)),
         'Тесты'
     );
 

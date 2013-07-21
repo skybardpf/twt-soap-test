@@ -7,13 +7,18 @@
  */
 class Group_functionsController extends Controller
 {
-	/**
+    public $pageTitle = 'SOAP Unit тесты | ';
+
+    /**
 	 * Declares class-based actions.
 	 */
 	public function actions()
 	{
 		return array(
-            'create' => 'application.controllers.group_functions.CreateAction'
+            'create' => 'application.controllers.group_functions.CreateAction',
+            'update' => 'application.controllers.group_functions.UpdateAction',
+            'delete' => 'application.controllers.group_functions.DeleteAction',
+            'list' => 'application.controllers.group_functions.ListAction'
         );
 	}
 
@@ -32,13 +37,44 @@ class Group_functionsController extends Controller
     }
 
     /**
+     * @param SoapService $service
+     * @return GroupFunctions
+     */
+    public function createModel(SoapService $service)
+    {
+        $model = new GroupFunctions();
+        $model->service_id = $service->primaryKey;
+        return $model;
+    }
+
+    /**
+     * @param integer $id
+     * @return GroupFunctions
+     * @throws CHttpException
+     */
+    public function loadModel($id)
+    {
+        $model = GroupFunctions::model()->findByPk($id);
+        if ($model === null) {
+            throw new CHttpException(404, 'Не найдена группа.');
+        }
+        return $model;
+    }
+
+    /**
      * @param int $service_id
      * @return GroupFunctions
      */
-    public function createModel($service_id)
+    public function getProviderData($service_id)
     {
-        $model = new GroupFunctions();
-        $model->service_id = $service_id;
-        return $model;
+        $data = GroupFunctions::model()->findAll(
+            array(
+                'condition' => 'service_id=:service_id',
+                'params' => array(
+                    ':service_id' => $service_id
+                )
+            )
+        );
+        return $data;
     }
 }

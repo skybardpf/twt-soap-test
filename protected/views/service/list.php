@@ -1,14 +1,15 @@
 <?php
-/**
- * Список SOAP сервисов.
- *
- * @author Skibardin A.A. <skybardpf@artektiv.ru>
- *
- * @var $this ServiceController
- * @var $data SoapService[]
- * @var $runningServiceTests  array
- */
+    /**
+     * Список SOAP сервисов.
+     *
+     * @author Skibardin A.A. <skybardpf@artektiv.ru>
+     *
+     * @var $this ServiceController
+     * @var $data SoapService[]
+     * @var $runningServiceTests  array
+     */
 ?>
+
 <script>
     window.runningServiceTests = <?= (empty($runningServiceTests) ? CJSON::encode(array()) : CJSON::encode($runningServiceTests)); ?>;
 </script>
@@ -65,10 +66,6 @@
                 'header' => 'URL',
                 'type' => 'url'
             ),
-    //        array(
-    //            'name' => 'count_functions',
-    //            'header' => 'Кол-во функций'
-    //        ),
             array(
                 'name' => 'count_tests',
                 'header' => 'Всего тестов'
@@ -91,8 +88,7 @@
                     'class' => 'td-runtime'
                 ),
                 'value' => function($row) {
-                    if ($row['status'] == SoapTest::STATUS_TEST_STOP &&
-                        ($row['test_result'] == SoapTest::TEST_RESULT_OK || $row['test_result'] == SoapTest::TEST_RESULT_ERROR) && !is_null($row['runtime'])){
+                    if ($row['status'] == SoapTest::STATUS_TEST_STOP && !is_null($row['runtime'])){
                         return $row['runtime'] . ' сек.';
                     }
                     return '---';
