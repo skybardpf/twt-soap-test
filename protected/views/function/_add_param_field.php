@@ -7,7 +7,6 @@
 ?>
 <?php
     $types = SoapFunctionParam::getTypesOfData();
-//var_dump($model->input_param);die;
 ?>
 
 <tr class="param-<?= $index; ?>" data-param-index="<?= $index; ?>">
@@ -16,6 +15,15 @@
     <td>
         <?php echo CHtml::activeHiddenField($model,"[$index]type_of_data"); ?>
         <?php echo CHtml::TextField('type_of_data', $types[$model->type_of_data], array('disabled' => true)); ?>
+    </td>
+    <td>
+        <?php
+        if ($model->type_of_data == SoapFunctionParam::TYPE_DATA_ARRAY_VALUES){
+            echo CHtml::activeDropDownList($model, '['.$index.']array_type_of_data', SoapFunctionParam::getNativeTypesOfData());
+        } else {
+            echo '---';
+        }
+        ?>
     </td>
     <td><?php echo CHtml::activeCheckBox($model,"[$index]required"); ?></td>
     <td><?php echo CHtml::activeTextField($model,"[$index]description"); ?></td>

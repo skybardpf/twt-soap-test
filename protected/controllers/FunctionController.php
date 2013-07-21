@@ -9,6 +9,8 @@ class FunctionController extends Controller
 {
 	public $defaultAction = 'list';
 
+    private $_static_assets = null;
+
 	public function actions()
 	{
 		return array(
@@ -79,5 +81,31 @@ class FunctionController extends Controller
             throw new CHttpException(404, 'Не найден SOAP сервис.');
         }
         return $service;
+    }
+
+    /**
+     * Делаем предварительную настройку.
+     * @param CAction $action
+     * @return boolean
+     */
+    protected function beforeAction($action)
+    {
+        if ($this->_static_assets === null){
+            $this->_static_assets = Yii::app()->assetManager->publish(
+                Yii::app()->getBasePath().'/static',
+                false,
+                -1,
+                YII_DEBUG
+            );
+        }
+        return parent::beforeAction($action);
+    }
+
+    /**
+     * @return string Путь к опубликованным данным.
+     */
+    public function getStaticAssets()
+    {
+        return $this->_static_assets;
     }
 }

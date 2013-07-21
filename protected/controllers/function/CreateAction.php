@@ -38,20 +38,57 @@ class CreateAction extends CAction
             Yii::app()->end();
         }
 
-        $class = get_class($model);
+        $class = get_class(SoapFunction::model());
+        $class_func_param = get_class(SoapFunctionParam::model());
+
         $input_params = array();
         $output_params = array();
 
         if (isset($_POST[$class]) && !empty($_POST[$class])) {
+            $valid = true;
             $model->attributes = $_POST[$class];
-            if($model->validate()){
+            if (isset($_POST[$class_func_param]) && !empty($_POST[$class_func_param])){
+                foreach($_POST[$class_func_param] as $i=>$params){
+                    $p = new SoapFunctionParam();
+                    $p->attributes = $_POST[$class_func_param][$i];
+//
+
+                    if ($p->input_param){
+                        $input_params[$i] = $p;
+                    } else {
+                        $output_params[$i] = $p;
+                    }
+
+                    $valid = $p->validate() && $valid;
+                }
+            }
+
+            if ($valid && $model->validate()){
                 try {
-                    $model->save();
-                    $controller->redirect($controller->createUrl(
-                        'function/list',
-                        array('service_id' => $service->primaryKey)
-                    ));
-                } catch (CException $e){
+                    if ($model->save()){
+                        /**
+                         * @var $p SoapFunctionParam
+                         */
+                        foreach ($input_params as $p){
+                            $p->function_id = $model->primaryKey;
+                            $p->save();
+                        }
+                        /**
+                         * @var $p SoapFunctionParam
+                         */
+                        foreach ($output_params as $p){
+                            $p->function_id = $model->primaryKey;
+                            $p->save();
+                        }
+
+                        $controller->redirect(
+                            $controller->createUrl(
+                                'list',
+                                array('service_id' => $service->primaryKey)
+                            )
+                        );
+                    }
+                }catch (Exception $e){
                     $model->addError('id', $e->getMessage());
                 }
             }

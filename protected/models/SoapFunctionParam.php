@@ -4,6 +4,8 @@
  * Модель для таблицы soap_function_param.
  * Параметр функции. Используются для валидации входящих и исходящих параметров при тестировании.
  *
+ * @author Skibardin A.A. <skybardpf@artektiv.ru>
+ *
  * @property integer    $id
  * @property integer    $function_id
  * @property string     $name
@@ -68,6 +70,7 @@ class SoapFunctionParam extends CActiveRecord
 			array('input_param, type_of_data', 'required'),
 
 			array('type_of_data', 'in', 'range' => array_keys(self::getTypesOfData())),
+			array('array_type_of_data', 'in', 'range' => array_keys(self::getNativeTypesOfData())),
 
 			array('required, input_param', 'boolean'),
 			array('input_param', 'default', 'value' => false),
@@ -109,18 +112,30 @@ class SoapFunctionParam extends CActiveRecord
      */
     public static function getTypesOfData()
     {
+        return array_merge(
+            self::getNativeTypesOfData(),
+            array(
+                self::TYPE_DATA_ARRAY => 'Массив (Array)',
+                self::TYPE_DATA_TABLE => 'Таблица (Table)',
+                self::TYPE_DATA_FIELD_VALUE => 'Поле:Значение',
+                self::TYPE_DATA_ARRAY_VALUES => 'Массив значений',
+                self::TYPE_DATA_ARRAY_FIELDS => 'Массив Поле:Значение',
+            )
+       );
+    }
+
+    /**
+     * @static
+     * @return array Возвращает массив простых типов данных (key => label).
+     */
+    public static function getNativeTypesOfData()
+    {
         return array(
             self::DEFAULT_TYPE_OF_DATA => 'Строка (String)',
             self::TYPE_DATA_INTEGER => 'Число (Integer)',
             self::TYPE_DATA_BOOLEAN => 'Булево (Boolean)',
             self::TYPE_DATA_DATE => 'Дата (Date)',
-            self::TYPE_DATA_ARRAY => 'Массив (Array)',
-            self::TYPE_DATA_TABLE => 'Таблица (Table)',
-
-            self::TYPE_DATA_FIELD_VALUE => 'Поле:Значение',
-
-            self::TYPE_DATA_ARRAY_VALUES => 'Массив значений',
-            self::TYPE_DATA_ARRAY_FIELDS => 'Массив Поле:Значение',
-       );
+//            self::TYPE_DATA_ARRAY => 'Массив (Array)',
+        );
     }
 }

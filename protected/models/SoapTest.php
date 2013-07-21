@@ -60,6 +60,7 @@ class SoapTest extends CActiveRecord {
                 ) AS `runtime`,
                 test_result,
                 last_return,
+                last_errors,
                 args
             FROM '.self::model()->tableName().'
             WHERE function_id = :function_id'
@@ -186,11 +187,16 @@ class SoapTest extends CActiveRecord {
      */
     public function run()
     {
+        $last_return = '';
+        $last_errors = '';
+
         $test_result = self::TEST_RESULT_NOT_EXECUTED;
         $this->date_start = time();
         $this->date_end = NULL;
         $this->status = self::STATUS_TEST_RUN;
         $this->test_result = $test_result;
+        $this->last_return = $last_return;
+        $this->last_errors = $last_errors;
         $this->save();
 
         try {
@@ -221,9 +227,9 @@ class SoapTest extends CActiveRecord {
                 if (is_string($return->return) && stripos($return->return, 'error') !== false){
                     throw new CSoapTestException($return->return);
                 }
-                $return = $return->return;
+                $last_return = $return->return;
 
-                $errors = $this->soapFunction->checkAfterRequest($return);
+                $errors = $this->soapFunction->checkAfterRequest($last_return);
                 if (!empty($errors)){
                     $message = 'Ошибки в выходных данных:<br/>';
                     $message .= $this->formatErrorMessages($errors);
@@ -234,11 +240,12 @@ class SoapTest extends CActiveRecord {
                 throw new CSoapTestException($e->getMessage());
             }
         } catch (CSoapTestException $e){
-            $return = $e->getMessage();
+            $last_errors = $e->getMessage();
             $test_result = self::TEST_RESULT_ERROR;
         }
 
-        $this->last_return = $return;
+        $this->last_return = $last_return;
+        $this->last_errors = $last_errors;
         $this->date_end = time();
         $this->status = self::STATUS_TEST_STOP;
         $this->test_result = ($test_result != self::TEST_RESULT_ERROR) ?  self::TEST_RESULT_OK : $test_result;

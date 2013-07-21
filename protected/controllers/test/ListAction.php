@@ -14,10 +14,11 @@ class ListAction extends CAction
      */
 	public function run($func_id)
 	{
-        $function = SoapFunction::model()->findByPk($func_id);
-        if (!$function) {
-            throw new CHttpException(404, 'Функция не найдена.');
-        }
+        /**
+         * @var $controller TestController
+         */
+        $controller = $this->controller;
+        $function = $controller->loadFunction($func_id);
 
         $data = SoapTest::getList($function->primaryKey);
         $runningTests = SoapTest::getRunningTests($function->primaryKey);

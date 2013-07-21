@@ -1,6 +1,6 @@
 <?php
 /**
- * Запуск теста на выполнение {@link SoapTest}.
+ * Only Ajax. Запуск теста на выполнение {@link SoapTest}.
  *
  * @see SoapTest
  */
@@ -31,11 +31,11 @@ class RunAction extends CAction
             $test->run();
 
             $format = new CFormatter();
-//            var_dump($test->date_start);die;
             if (Yii::app()->request->isAjaxRequest) {
                 echo CJSON::encode(array(
                     'success' => true,
                     'data' => array(
+                        'last_errors' => $format->formatHtml($test->last_errors),
                         'last_return' => $format->formatHtml(mb_strlen($test->last_return) > 1000 ? mb_substr($test->last_return, 0, 1000)."…" : $test->last_return),
                         'test_result' => $test->test_result,
                         'date_start' => Yii::app()->dateFormatter->format('dd MMMM yyyy HH:mm:ss', $test->date_start),
@@ -46,8 +46,6 @@ class RunAction extends CAction
                 ));
                 Yii::app()->end();
             }
-//            return true;
-
         } catch(CException $e){
             if (Yii::app()->request->isAjaxRequest) {
                 echo CJSON::encode(array(
@@ -59,6 +57,5 @@ class RunAction extends CAction
                 throw new CHttpException(500, $e->getMessage());
             }
         }
-//        return false;
 	}
 }

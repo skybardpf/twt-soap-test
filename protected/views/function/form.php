@@ -20,7 +20,7 @@
 <?php
     echo '<h2>'.$this->pageTitle.'</h2>';
 
-    Yii::app()->clientScript->registerScriptFile('/static/js/function/form.js');
+    Yii::app()->clientScript->registerScriptFile($this->getStaticAssets() . '/js/function/form.js');
 
     $this->breadcrumbs = array(
         'Сервисы' => $this->createUrl('service/list'),
@@ -67,9 +67,17 @@
     <?= $form->dropDownListRow($model, 'type', $types); ?>
     <?= $form->textAreaRow($model, 'description'); ?>
 
-    Входные параметры:<br/>
+    <h4>Входные параметры:</h4>
     <table class="table input-params">
-        <tr><th></th><th>Название</th><th>Тип данных</th><th>Обязательное</th><th>Описание</th><th>Удалить</th></tr>
+        <tr>
+            <th></th>
+            <th>Название</th>
+            <th>Тип данных</th>
+            <th>Тип данных массива</th>
+            <th>Обязательное</th>
+            <th>Описание</th>
+            <th>Удалить</th>
+        </tr>
         <?php
             foreach($input_params as $i=>$item){
                 $this->renderPartial('_add_param_field', array(
@@ -108,9 +116,17 @@
     ));
 ?>
     <br/><br/>
-    Выходные параметры:<br/>
+    <h4>Выходные параметры:</h4>
     <table class="table output-params">
-        <tr><th></th><th>Название</th><th>Тип данных</th><th>Обязательное</th><th>Описание</th><th>Удалить</th></tr>
+        <tr>
+            <th></th>
+            <th>Название</th>
+            <th>Тип данных</th>
+            <th>Тип данных массива</th>
+            <th>Обязательное</th>
+            <th>Описание</th>
+            <th>Удалить</th>
+        </tr>
         <?php
             foreach($output_params as $i=>$item){
                 $this->renderPartial('_add_param_field', array(

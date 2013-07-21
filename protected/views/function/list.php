@@ -12,8 +12,7 @@
 </script>
 
 <?php
-    //Yii::app()->clientScript->registerCoreScript('jquery');
-    Yii::app()->clientScript->registerScriptFile('/static/js/function/list.js');
+    Yii::app()->clientScript->registerScriptFile($this->getStaticAssets() . '/js/function/list.js');
 
     $this->breadcrumbs=array(
         'Сервисы' => $this->createUrl('/service/list'),
