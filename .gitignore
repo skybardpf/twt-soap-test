@@ -1,4 +1,4 @@
 .idea
 .project
 protected/data/*.db
-
+public/assets/*
