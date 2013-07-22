@@ -4,17 +4,19 @@
  * Можно указать входные/выходные параметры, тип функции (get, list, save, delete).
  * Задать описание.
  *
- * @var $this           FunctionController
- * @var $service        SoapService
- * @var $model          SoapFunction
- * @var $input_params   SoapFunctionParam[]
- * @var $output_params  SoapFunctionParam[]
- * @var $form           TbActiveForm
+ * @var FunctionController  $this
+ * @var SoapService         $service
+ * @var SoapFunction        $model
+ * @var SoapFunctionParam[] $input_params
+ * @var SoapFunctionParam[] $output_params
+ * @var integer             $count_children
+ * @var TbActiveForm        $form
  */
 ?>
 
 <script>
     window.count_params = <?= count($output_params+$input_params); ?>;
+    window.count_children_params = <?= $count_children; ?>;
 </script>
 
 <?php

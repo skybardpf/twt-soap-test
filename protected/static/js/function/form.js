@@ -1,8 +1,10 @@
 /**
  *  @var {Number} window.count_params
+ *  @var {Number} window.count_children_params
  */
 $(document).ready(function(){
 //    var array_index = [];
+    console.log(window.count_children_params);
 
     $('div.add-output-param ul li a').click(function(){
         var type_of_data = $(this).data('type-of-data');
@@ -73,7 +75,7 @@ $(document).ready(function(){
 
         $.ajax({
             success: function(html){
-                $('table.parent-param-'+index).append(html);
+                $('table.parent-param-'+index+' tbody').append(html);
 
                 var b = $('button.del-input-child-param');
                 b.off('click');
@@ -86,7 +88,7 @@ $(document).ready(function(){
                 index: index,
                 input_param: true,
                 child: true,
-                child_index: window.count_params++
+                child_index: window.count_children_params++
             },
             cache: false,
             dataType: 'html'
@@ -107,7 +109,7 @@ $(document).ready(function(){
 
         $.ajax({
             success: function(html){
-                $('table.parent-param-'+index).append(html);
+                $('table.parent-param-'+index+' tbody').append(html);
 
                 var b = $('button.del-output-child-param');
                 b.off('click');
@@ -120,7 +122,7 @@ $(document).ready(function(){
                 index: index,
                 input_param: false,
                 child: true,
-                child_index: window.count_params++
+                child_index: window.count_children_params++
             },
             cache: false,
             dataType: 'html'
