@@ -38,7 +38,6 @@ class UpdateAction extends CAction
             $valid = true;
             $model->attributes = $_POST[$class_func];
             if (isset($_POST[$class_func_param]) && !empty($_POST[$class_func_param])){
-//                var_dump($_POST[$class_func_param]);die;
                 foreach($_POST[$class_func_param] as $i=>$params){
                     $p = new SoapFunctionParam();
                     $p->attributes = $_POST[$class_func_param][$i];
@@ -51,7 +50,6 @@ class UpdateAction extends CAction
                             $child->attributes = $attr;
                             $child->function_id = $model->primaryKey;
                             $p->children[$j] = $child;
-
                             $valid = $child->validate() && $valid;
                         }
                     }
@@ -126,7 +124,6 @@ class UpdateAction extends CAction
                 }
             }
         }
-//        var_dump($count_children);
 
         $controller->render(
             'form',

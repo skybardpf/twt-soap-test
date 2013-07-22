@@ -94,6 +94,9 @@ class SoapFunction extends CActiveRecord
         } elseif ($type_of_data == SoapFunctionParam::TYPE_DATA_INTEGER){
             return is_integer((int)$value);
         } elseif ($type_of_data == SoapFunctionParam::TYPE_DATA_BOOLEAN){
+            if (is_string($value) && ($value == 'true' || $value == 'false')){
+                return true;
+            }
             return is_bool($value);
         } elseif ($type_of_data == SoapFunctionParam::TYPE_DATA_ARRAY){
             return is_array($value);
@@ -101,6 +104,66 @@ class SoapFunction extends CActiveRecord
             return (FALSE !== strtotime($value));
         }
         return false;
+    }
+
+    /**
+     * Example: "data":[ {"Поле":"name","Значение":"Тест 23 "},{"Поле":"for_yur","Значение":"false"},{"Поле":"notification_date","Значение":"2012-01-01"}]
+     *
+     * @param SoapFunctionParam $param
+     * @param mixed $value
+     * @return array
+     */
+    private function _checkTypeArrayFields(SoapFunctionParam $param, $value)
+    {
+        $errors = array();
+        if (is_array($value) && !empty($value)){
+            $types = SoapFunctionParam::getTypesOfData();
+            $children = $param->getChildren();
+            if (!empty($children)){
+                $data = array();
+                foreach ($value as $v){
+                    $data[$v['Поле']] = $v['Значение'];
+                }
+                foreach ($children as $v){
+                    if (!isset($data[$v->name])){
+                        $errors[] = ' - Не найдено {'.$v->name.'}';
+                    } elseif (!$this->_checkNativeType($v->type_of_data, $data[$v->name], $v->required)){
+                        $errors[] = ' - Неправильный тип {'.$v->name.'} - {'.$types[$v->type_of_data].'}';
+                    }
+                }
+            }
+        }
+        return $errors;
+    }
+
+    /**
+     * Example: ElementsStructure":[{"Field":"id","Value":""},{"Field":"id_lico","Value":"0000000007"}]
+     *
+     * @param SoapFunctionParam $param
+     * @param mixed $value
+     * @return array
+     */
+    private function _checkTypeArrayElementsStructure(SoapFunctionParam $param, $value)
+    {
+        $errors = array();
+        if (is_array($value) && !empty($value)){
+            $types = SoapFunctionParam::getTypesOfData();
+            $children = $param->getChildren();
+            if (!empty($children)){
+                $data = array();
+                foreach ($value as $v){
+                    $data[$v['Field']] = $v['Value'];
+                }
+                foreach ($children as $v){
+                    if (!isset($data[$v->name])){
+                        $errors[] = ' - Не найдено {'.$v->name.'}';
+                    } elseif (!$this->_checkNativeType($v->type_of_data, $data[$v->name], $v->required)){
+                        $errors[] = ' - Неправильный тип {'.$v->name.'} - {'.$types[$v->type_of_data].'}';
+                    }
+                }
+            }
+        }
+        return $errors;
     }
 
     /**
@@ -149,26 +212,6 @@ class SoapFunction extends CActiveRecord
             return true;
         } elseif ($param->type_of_data == SoapFunctionParam::TYPE_DATA_ARRAY_FIELDS){
 
-
-        // Example: ElementsStructure":[{"Field":"id","Value":""},{"Field":"id_lico","Value":"0000000007"}]
-        } elseif ($param->type_of_data == SoapFunctionParam::TYPE_DATA_ARRAY_ELEMENTS_STRUCTURE){
-            if (!is_array($value)){
-                return false;
-            }
-            $children = $param->getChildren();
-            if (!empty($children)){
-                $data = array();
-                foreach ($value as $v){
-                    $data[$v['Field']] = $v['Value'];
-                }
-                foreach ($children as $v){
-                    if (!isset($data[$v->name]) || !$this->_checkNativeType($v->type_of_data, $data[$v->name], $v->required)){
-                        return false;
-                    }
-                }
-                return true;
-            }
-
         } elseif ($param->type_of_data == SoapFunctionParam::TYPE_DATA_TABLE){
 
         }
@@ -194,6 +237,14 @@ class SoapFunction extends CActiveRecord
                     'type_of_data' => SoapFunctionParam::TYPE_DATA_BOOLEAN
                 );
             }
+        } elseif($this->type == self::FUNCTION_TYPE_SAVE){
+            if (!is_string($return) || !ctype_digit($return)){
+                $wrong_data_type[] = array(
+                    'key' => 'return',
+                    'type_of_data' => SoapFunctionParam::DEFAULT_TYPE_OF_DATA
+                );
+            }
+
         } elseif($this->type == self::FUNCTION_TYPE_GET){
             $ret = CJSON::decode($return);
 
@@ -254,7 +305,8 @@ class SoapFunction extends CActiveRecord
             if (!isset($args['data'])){
                 throw new CSoapTestException('Не задан массива DATA.');
             }
-            $args = $args['data'];
+//            var_dump($args);die;
+//            $args = $args['data'];
         }
 
         $input_params = $this->getParamsByType(SoapFunctionParam::TYPE_INPUT);
@@ -275,38 +327,33 @@ class SoapFunction extends CActiveRecord
         $wrong_data_type = array();
 
         $types = SoapFunctionParam::getTypesOfData();
-//        foreach ($args as $key=>$value){
-//            if (!isset($input_params[$key])){
-//                $not_found[] = $key;
-//            } elseif (empty($key)) {
-//                if ($input_params[$key]->required){
-//                    $required[] = $key;
-//                }
-//            } elseif (!$this->_checkAllType($input_params[$key], $value)) {
-//                if ($output_params[$key]->type_of_data == SoapFunctionParam::TYPE_DATA_ARRAY_VALUES) {
-//                    $type = $types[$output_params[$key]->type_of_data] . ' : ' . $types[$output_params[$key]->array_type_of_data];
-//                } else {
-//                    $type = $types[$output_params[$key]->type_of_data];
-//                }
-//
-//                $wrong_data_type[] = array(
-//                    'key' => $key,
-//                    'type_of_data' => $type
-//                );
-//            }
-//        }
-
         foreach ($input_params as $key=>$value){
             if (!empty($input_params[$key]->parent_name)){
                 continue;
             }
             if (!isset($args[$key])){
                 $not_found[] = $key;
+            } elseif ($input_params[$key]->type_of_data == SoapFunctionParam::TYPE_DATA_ARRAY_ELEMENTS_STRUCTURE){
+                $errors = $this->_checkTypeArrayElementsStructure($input_params[$key], $args[$key]);
+                if (!empty($errors)){
+                    $message = 'Ошибки в ElementsStructure:<br/>';
+                    $message .= implode('<br/>', $errors);
+                    $not_found[] = $message;
+                }
+
+            } elseif ($input_params[$key]->type_of_data == SoapFunctionParam::TYPE_DATA_ARRAY_FIELDS){
+                $errors = $this->_checkTypeArrayFields($input_params[$key], $args[$key]);
+                if (!empty($errors)){
+                    $message = 'Ошибки в массиве Поле-Значение:<br/>';
+                    $message .= implode('<br/>', $errors);
+                    $not_found[] = $message;
+                }
+
             } elseif (!$this->_checkAllType($input_params[$key], $args[$key])) {
-                if ($output_params[$key]->type_of_data == SoapFunctionParam::TYPE_DATA_ARRAY_VALUES) {
-                    $type = $types[$output_params[$key]->type_of_data] . ' : ' . $types[$output_params[$key]->array_type_of_data];
+                if ($input_params[$key]->type_of_data == SoapFunctionParam::TYPE_DATA_ARRAY_VALUES) {
+                    $type = $types[$input_params[$key]->type_of_data] . ' : ' . $types[$input_params[$key]->array_type_of_data];
                 } else {
-                    $type = $types[$output_params[$key]->type_of_data];
+                    $type = $types[$input_params[$key]->type_of_data];
                 }
 
                 $wrong_data_type[] = array(

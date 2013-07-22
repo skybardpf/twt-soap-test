@@ -125,12 +125,12 @@ class SoapFunctionParam extends CActiveRecord
             self::getNativeTypesOfData(),
             array(
 //                self::TYPE_DATA_ARRAY => 'Массив (Array)',
-                self::TYPE_DATA_TABLE => 'Таблица (Table)',
-                self::TYPE_DATA_FIELD_VALUE => 'Поле:Значение',
+//                self::TYPE_DATA_FIELD_VALUE => 'Поле:Значение',
                 self::TYPE_DATA_ARRAY_VALUES => 'Массив значений',
                 self::TYPE_DATA_ARRAY_ID_INDEX_TYPE_INDEX => 'Массив ID(Индекс)-TYPE(Индекс)',
                 self::TYPE_DATA_ARRAY_FIELDS => 'Массив Поле:Значение',
                 self::TYPE_DATA_ARRAY_ELEMENTS_STRUCTURE => 'Массив ElementsStructure',
+                self::TYPE_DATA_TABLE => 'Таблица (Table)',
             )
        );
     }

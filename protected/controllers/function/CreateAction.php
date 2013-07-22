@@ -36,20 +36,29 @@ class CreateAction extends CAction
             Yii::app()->end();
         }
 
-        $class = get_class(SoapFunction::model());
+        $class_func = get_class(SoapFunction::model());
         $class_func_param = get_class(SoapFunctionParam::model());
 
         $input_params = array();
         $output_params = array();
 
-        if (isset($_POST[$class]) && !empty($_POST[$class])) {
+        if (isset($_POST[$class_func]) && !empty($_POST[$class_func])) {
             $valid = true;
-            $model->attributes = $_POST[$class];
+            $model->attributes = $_POST[$class_func];
             if (isset($_POST[$class_func_param]) && !empty($_POST[$class_func_param])){
                 foreach($_POST[$class_func_param] as $i=>$params){
                     $p = new SoapFunctionParam();
                     $p->attributes = $_POST[$class_func_param][$i];
-//
+
+                    if (isset($_POST[$class_func_param][$i]['__children__'])){
+                        $parent = $_POST[$class_func_param][$i]['__children__'];
+                        foreach($parent as $j=>$attr){
+                            $child = new SoapFunctionParam();
+                            $child->attributes = $attr;
+                            $p->children[$j] = $child;
+                            $valid = $child->validate() && $valid;
+                        }
+                    }
 
                     if ($p->input_param){
                         $input_params[$i] = $p;
@@ -70,6 +79,15 @@ class CreateAction extends CAction
                         foreach ($input_params as $p){
                             $p->function_id = $model->primaryKey;
                             $p->save();
+
+                            /**
+                             * @var $child SoapFunctionParam
+                             */
+                            foreach($p->children as $child){
+                                $child->parent_name = $p->name;
+                                $child->function_id = $model->primaryKey;
+                                $child->save();
+                            }
                         }
                         /**
                          * @var $p SoapFunctionParam
@@ -77,6 +95,15 @@ class CreateAction extends CAction
                         foreach ($output_params as $p){
                             $p->function_id = $model->primaryKey;
                             $p->save();
+
+                            /**
+                             * @var $child SoapFunctionParam
+                             */
+                            foreach($p->children as $child){
+                                $child->parent_name = $p->name;
+                                $child->function_id = $model->primaryKey;
+                                $child->save();
+                            }
                         }
 
                         $controller->redirect(
@@ -99,6 +126,7 @@ class CreateAction extends CAction
                 'service' => $service,
                 'input_params' => $input_params,
                 'output_params' => $output_params,
+                'count_children' => 0
             )
         );
 	}
