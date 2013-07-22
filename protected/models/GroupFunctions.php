@@ -18,7 +18,8 @@
  * @property $name          string
  * @property $service_id    int
  *
- * @property $soapService   SoapService
+ * @property SoapService    $soapService
+ * @property SoapFunction[]   $soapFunctions
  */
 
 class GroupFunctions extends CActiveRecord
@@ -82,7 +83,16 @@ class GroupFunctions extends CActiveRecord
      */
     protected function beforeDelete()
     {
-        return parent::beforeDelete();
+        $default_group = $this->soapService->getDefaultGroup();
+        if (parent::beforeDelete()){
+            foreach ($this->soapFunctions as $f){
+                $f->group_id = $default_group->primaryKey;
+                $f->save();
+            }
+
+            return true;
+        }
+        return false;
     }
 
 }
