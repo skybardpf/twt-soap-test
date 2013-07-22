@@ -423,7 +423,7 @@ class SoapFunction extends CActiveRecord
 		// will receive user inputs.
 		return array(
 			array('name', 'required'),
-			array('name', 'unique'),
+//			array('name', 'unique'),
 			array('name', 'length', 'max' => 45),
 
             array('type', 'required'),
