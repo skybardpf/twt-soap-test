@@ -32,12 +32,13 @@ class UpdateAction extends CAction
 
         $input_params = array();
         $output_params = array();
+        $count_children = 0;
 
         if (isset($_POST[$class_func]) && !empty($_POST[$class_func])) {
             $valid = true;
             $model->attributes = $_POST[$class_func];
             if (isset($_POST[$class_func_param]) && !empty($_POST[$class_func_param])){
-                var_dump($_POST[$class_func_param]);die;
+//                var_dump($_POST[$class_func_param]);die;
                 foreach($_POST[$class_func_param] as $i=>$params){
                     $p = new SoapFunctionParam();
                     $p->attributes = $_POST[$class_func_param][$i];
@@ -114,6 +115,7 @@ class UpdateAction extends CAction
             foreach ($model->soapFunctionParams as $p){
                 if (empty($p->parent_name)){
                     $p->children = $p->getChildren();
+                    $count_children += count($p->children);
 
                     if ($p->input_param){
                         $input_params[$i] = $p;
@@ -124,6 +126,7 @@ class UpdateAction extends CAction
                 }
             }
         }
+//        var_dump($count_children);
 
         $controller->render(
             'form',
@@ -132,6 +135,7 @@ class UpdateAction extends CAction
                 'service' => $service,
                 'input_params' => $input_params,
                 'output_params' => $output_params,
+                'count_children' => $count_children
             )
         );
 	}
