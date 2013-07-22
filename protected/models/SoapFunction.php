@@ -87,6 +87,8 @@ class SoapFunction extends CActiveRecord
             } elseif (empty($value)){
                 return false;
             }
+        } elseif (empty($value)){
+            return true;
         }
 
         if ($type_of_data == SoapFunctionParam::DEFAULT_TYPE_OF_DATA){
@@ -259,6 +261,7 @@ class SoapFunction extends CActiveRecord
                     if (!isset($ret[$key])){
                         $not_found[] = $key;
                     } elseif (!$this->_checkAllType($output_params[$key], $ret[$key])) {
+
                         if ($output_params[$key]->type_of_data == SoapFunctionParam::TYPE_DATA_ARRAY_VALUES) {
                             $type = $types[$output_params[$key]->type_of_data] . ' : ' . $types[$output_params[$key]->array_type_of_data];
                         } elseif ($output_params[$key]->type_of_data == SoapFunctionParam::TYPE_DATA_ARRAY_ID_INDEX_TYPE_INDEX) {
