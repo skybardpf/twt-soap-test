@@ -7,6 +7,15 @@
  * @var $form   TbActiveForm
  */
 
+$this->breadcrumbs = array(
+    'Сервисы' => $this->createUrl('service/list'),
+    'Функции' => $this->createUrl('function/list', array('service_id' => $model->soapFunction->groupFunctions->soapService->primaryKey)),
+    'Тесты' => $this->createUrl('test/list', array('func_id' => $model->soapFunction->primaryKey)),
+    'Добавить тест',
+);
+
+echo CHtml::tag('h2', array(), (($model->isNewRecord) ? 'Добавление' : 'Редактирование') . ' теста к функции «'.$model->soapFunction->name.'» сервиса «'.$model->soapFunction->groupFunctions->soapService->name.'»');
+
 $form = $this->beginWidget('bootstrap.widgets.TbActiveForm', array(
 	'id' => 'model-form-form',
 	'type' => 'horizontal',

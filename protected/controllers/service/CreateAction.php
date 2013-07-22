@@ -1,30 +1,43 @@
 <?php
-//namespace controllers\service;
-
+/**
+ * Добавление нового SOAP сервиса.
+ *
+ * @author Skibardin A.A. <skybardpf@artektiv.ru>
+ *
+ * @see SoapService
+ */
 class CreateAction extends CAction
 {
 	public function run()
 	{
-        $model = new SoapService();
+        /**
+         * @var $controller ServiceController
+         */
+        $controller = $this->controller;
+        $controller->pageTitle .= 'Добавление SOAP сервиса';
+        /**
+         * @var $model SoapService
+         */
+        $model = $controller->createModel();
 
-		if(isset($_POST['ajax']) && $_POST['ajax']==='model-form-form') {
+        if(isset($_POST['ajax']) && $_POST['ajax']==='model-form-form') {
 			echo CActiveForm::validate($model);
 			Yii::app()->end();
 		}
-
 
 		if (isset($_POST[get_class($model)])) {
 			$model->attributes = $_POST[get_class($model)];
             try {
                 if ($model->save()) {
-                    $this->controller->redirect($this->controller->createUrl('list'));
+                    $controller->redirect($controller->createUrl('list'));
                 }
             }catch (Exception $e){
-                var_dump($e->getMessage());
+                $model->addError('id', $e->getMessage());
             }
 		}
-		$this->controller->render('create', array(
-            'model' => $model
-        ));
+		$controller->render(
+            'form',
+            array('model' => $model)
+        );
 	}
 }

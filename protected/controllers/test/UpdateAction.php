@@ -1,6 +1,6 @@
 <?php
 /**
- * Рекдировать существующий тест SoapTest.
+ * Редактирование теста SoapTest.
  *
  * @see SoapTest
  * Class UpdateAction
@@ -10,12 +10,15 @@ class UpdateAction extends CAction
 	public function run($id)
 	{
         /**
+         * @var $controller TestController
+         */
+        $controller = $this->controller;
+
+        /**
          * @var $model SoapTest
          */
-        $model = SoapTest::model()->findByPk($id);
-        if (!$model) {
-            throw new CHttpException(404, 'Unit-тест не найден.');
-        }
+        $model = $controller->loadModel($id);
+        $controller->pageTitle .= ' | Редактирование теста для функции "'.$model->soapFunction->name.'"';
 
         if(isset($_POST['ajax']) && $_POST['ajax']==='model-form-form') {
             echo CActiveForm::validate($model);
@@ -43,7 +46,7 @@ class UpdateAction extends CAction
             }
         }
         $this->controller->render(
-            'create',
+            'form',
             array(
                 'model' => $model
             )

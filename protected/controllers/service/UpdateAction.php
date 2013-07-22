@@ -1,24 +1,47 @@
 <?php
-
+/**
+ * Редактирование существующего SOAP сервиса.
+ *
+ * @author Skibardin A.A. <skybardpf@artektiv.ru>
+ *
+ * @see SoapService
+ */
 class UpdateAction extends CAction
 {
+    /**
+     * @param integer $id
+     * @throws CHttpException
+     */
 	public function run($id)
 	{
-        $model = SoapService::model()->findByPk($id);
-		if (!$model) {
-            throw new CHttpException(404, 'Не найден сервис.');
-        }
+        /**
+         * @var $controller ServiceController
+         */
+        $controller = $this->controller;
+        $controller->pageTitle .= 'Редактирование SOAP сервиса';
+        /**
+         * @var $model SoapService
+         */
+        $model = $controller->loadModel($id);
+
 		if(isset($_POST['ajax']) && $_POST['ajax']==='model-form-form') {
 			echo CActiveForm::validate($model);
 			Yii::app()->end();
 		}
 
 		if (isset($_POST[get_class($model)])) {
-			$model->attributes=$_POST[get_class($model)];
-			if ($model->save()) {
-				$this->controller->redirect($this->controller->createUrl('list'));
-			}
+			$model->attributes = $_POST[get_class($model)];
+            try {
+                if ($model->save()) {
+                    $controller->redirect($controller->createUrl('list'));
+                }
+            }catch (Exception $e){
+                $model->addError('id', $e->getMessage());
+            }
 		}
-		$this->controller->render('update', array('model' => $model));
+		$controller->render(
+            'form',
+            array('model' => $model)
+        );
 	}
 }

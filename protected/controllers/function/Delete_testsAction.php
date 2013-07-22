@@ -1,34 +1,51 @@
 <?php
-
+/**
+ * Удаление тестов для указанной функции.
+ *
+ * @author Skibardin A.A. <skybardpf@artektiv.ru>
+ *
+ * @see SoapFunction
+ * @see SoapTest
+ */
 class Delete_testsAction extends CAction
 {
 	public function run($id)
 	{
         /**
+         * @var $controller FunctionController
+         */
+        $controller = $this->controller;
+        /**
          * @var $model SoapFunction
          */
-        $model = SoapFunction::model()->findByPk($id);
-        if (!$model) {
-            throw new CHttpException(404, 'Не найдена функция.');
-        }
-		if (Yii::app()->request->isAjaxRequest) {
+        $model = $controller->loadModel($id);
+        $group = $model->groupFunctions;
+
+        if (Yii::app()->request->isAjaxRequest) {
 			$model->deleteTests();
 		} else {
 			if (isset($_POST['result'])) {
 				switch ($_POST['result']) {
-					case 'yes':
-						if ($model->deleteTests()) {
-							$this->controller->redirect($this->controller->createUrl('list', array('service_id' => $model->soapService->primaryKey)));
-						} else {
-							throw new CHttpException(500, 'Не удалось удалить тесты для функцию.');
-						}
-						break;
-					default:
-						$this->controller->redirect($this->controller->createUrl('list', array('service_id' => $model->soapService->primaryKey)));
+                    case 'yes':
+                        if ($model->deleteTests()) {
+                            $controller->redirect($controller->createUrl('list', array('service_id' => $group->soapService->primaryKey)));
+                        } else {
+                            throw new CHttpException(500, 'Не удалось удалить тесты.');
+                        }
+                    break;
+                    default:
+                        $controller->redirect($controller->createUrl('list', array('service_id' => $group->soapService->primaryKey)));
                     break;
 				}
 			}
-			$this->controller->render('delete', array('model' => $model));
+			$this->controller->render(
+                'delete',
+                array(
+                    'model' => $model,
+                    'is_function_delete' => false,
+                    'service_id' => $group->soapService->primaryKey,
+                )
+            );
 		}
 	}
 }

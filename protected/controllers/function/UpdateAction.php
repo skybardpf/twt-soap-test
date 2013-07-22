@@ -9,102 +9,129 @@ class UpdateAction extends CAction
 	public function run($id)
 	{
         /**
+         * @var $controller FunctionController
+         */
+        $controller = $this->controller;
+        /**
          * @var $model SoapFunction
          */
-        $model = SoapFunction::model()->findByPk($id);
-        if ($model === null) {
-            throw new CHttpException(404, 'Функция не найдена.');
-        }
+        $model = $controller->loadModel($id);
+        /**
+         * @var $service SoapService
+         */
+        $service = $controller->loadService($model->groupFunctions->soapService->primaryKey);
+        $controller->pageTitle .= ' | Редактирование функции «'.$model->name.'» для сервиса «'.$service->name.'»';
 
         if(isset($_POST['ajax']) && $_POST['ajax']==='model-form-form') {
             echo CActiveForm::validate($model);
             Yii::app()->end();
         }
 
-        $class = get_class(SoapFunctionParam::model());
+        $class_func = get_class(SoapFunction::model());
+        $class_func_param = get_class(SoapFunctionParam::model());
 
-        $names = array();
-        if (isset($_POST[$class]) && !empty($_POST[$class])) {
-//            $old_args = $model->args;
-//            $model->attributes = $_POST[get_class($model)];
-//            var_dump($_POST[$class]);die;
+        $input_params = array();
+        $output_params = array();
 
-            foreach ($model->soapFunctionParams as $p){
-                $p->delete();
-            }
-
+        if (isset($_POST[$class_func]) && !empty($_POST[$class_func])) {
             $valid = true;
-            $new_params = array();
-            foreach($_POST[$class] as $i=>$item){
-//                $name = $_POST[$class][$i]['name'];
+            $model->attributes = $_POST[$class_func];
+            if (isset($_POST[$class_func_param]) && !empty($_POST[$class_func_param])){
+                var_dump($_POST[$class_func_param]);die;
+                foreach($_POST[$class_func_param] as $i=>$params){
+                    $p = new SoapFunctionParam();
+                    $p->attributes = $_POST[$class_func_param][$i];
+                    $p->function_id = $model->primaryKey;
 
-//                var_dump($i);
-//                var_dump($item);
-//                die;
+                    if (isset($_POST[$class_func_param][$i]['__children__'])){
+                        $parent = $_POST[$class_func_param][$i]['__children__'];
+                        foreach($parent as $j=>$attr){
+                            $child = new SoapFunctionParam();
+                            $child->attributes = $attr;
+                            $child->function_id = $model->primaryKey;
+                            $p->children[$j] = $child;
 
-                $p = new SoapFunctionParam();
-                $p->function_id = $model->primaryKey;
-                $p->attributes = $_POST[$class][$i];
-                if ($p->validate()){
-                    $p->save();
-                    $names[$p['name']] = $p;
-                } else {
-//                    var_dump($p->getErrors());
+                            $valid = $child->validate() && $valid;
+                        }
+                    }
+
+                    if ($p->input_param){
+                        $input_params[$i] = $p;
+                    } else {
+                        $output_params[$i] = $p;
+                    }
+                    $valid = $p->validate() && $valid;
                 }
-
-//                if(isset($names[$name])){
-//                    /**
-//                     * @var $p SoapFunctionParam
-//                     */
-//                    $p = $names[$name];
-//                    $p->attributes = $_POST[$class][$i];
-//                    if ($p->validate()){
-//                        $p->save();
-//                    }
-//
-////                    $valid = $names[$name]->validate() && $valid;
-//                } else {
-//                    $p = new SoapFunctionParam();
-//                    $p->function_id = $model->primaryKey;
-//                    $p->attributes = $_POST[$class][$i];
-//                    if ($p->validate()){
-//                        $p->save();
-//                    }
-//                }
-
             }
-            $this->controller->redirect($this->controller->createUrl('list', array('service_id' => $model->service_id)));
 
-
-
-//            foreach($model->soapFunctionParams as $i=>$item){
-//                if(isset($_POST[$class][$i])){
-//                    $item->attributes = $_POST[$class][$i];
-//                }
-//                $valid = $item->validate() && $valid;
-//            }
-//            if($valid){
+            if ($valid && $model->validate()){
                 try {
-//                    foreach($model->soapFunctionParams as $item){
-//                        $item->save();
-//                    }
+                    if ($model->save()){
+                        foreach ($model->soapFunctionParams as $p){
+                            $p->delete();
+                        }
+
+                        /**
+                         * @var $p SoapFunctionParam
+                         */
+                        foreach ($input_params as $p){
+                            $p->save();
+                            /**
+                             * @var $child SoapFunctionParam
+                             */
+                            foreach($p->children as $child){
+                                $child->parent_name = $p->name;
+                                $child->save();
+                            }
+                        }
+                        /**
+                         * @var $p SoapFunctionParam
+                         */
+                        foreach ($output_params as $p){
+                            $p->save();
+                            /**
+                             * @var $child SoapFunctionParam
+                             */
+                            foreach($p->children as $child){
+                                $child->parent_name = $p->name;
+                                $child->save();
+                            }
+                        }
+
+                        $controller->redirect(
+                            $controller->createUrl(
+                                'list',
+                                array('service_id' => $service->primaryKey)
+                            )
+                        );
+                    }
                 }catch (Exception $e){
-//                    $model->addError('id', $e->getMessage());
+                    $model->addError('id', $e->getMessage());
                 }
-//            }
+            }
         } else {
+            $i = 0;
             foreach ($model->soapFunctionParams as $p){
-                $names[$p['name']] = $p;
+                if (empty($p->parent_name)){
+                    $p->children = $p->getChildren();
+
+                    if ($p->input_param){
+                        $input_params[$i] = $p;
+                    } else {
+                        $output_params[$i] = $p;
+                    }
+                    $i++;
+                }
             }
         }
 
-//        var_dump($model->soapFunctionParams);die;
-
-        $this->controller->render(
+        $controller->render(
             'form',
             array(
                 'model' => $model,
-                'params' => $names
+                'service' => $service,
+                'input_params' => $input_params,
+                'output_params' => $output_params,
             )
         );
 	}

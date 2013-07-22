@@ -4,6 +4,10 @@ class TestController extends Controller
 {
 	public $defaultAction = 'list';
 
+    public $pageTitle = 'SOAP Unit тесты';
+
+    private $_static_assets = null;
+
     public function actions()
     {
         return array(
@@ -28,158 +32,71 @@ class TestController extends Controller
         );
     }
 
-//    public function actionSelectTestFunction($id)
-//    {
-//        if(Yii::app()->request->isAjaxRequest){
-//            $func = new SoapFunction();
-//            $func = $func->model()->findByPk($id);
-//            if (!$func) {
-//                throw new CHttpException(404, 'Функция не найдена');
-//            }
-//
-//            $tests = new SoapTest();
-//            $tests->selectRunningFunctionTests($id);
-//
-//            echo CJSON::encode(
-//                array(
-//                    'function_id'   => $id,
-//                    'selected'      => true
-//                )
-//            );
-//        }
-//    }
+    /**
+     * @param int $id
+     * @return SoapTest
+     * @throws CHttpException
+     */
+    public function loadModel($id)
+    {
+        $model = SoapTest::model()->findByPk($id);
+        if ($model === null) {
+            throw new CHttpException(404, 'Тест не найден.');
+        }
+        return $model;
+    }
 
-//    public function actionSelectTest($id)
-//    {
-//        if(Yii::app()->request->isAjaxRequest){
-//            $test = new SoapTest();
-//            $test = $test->model()->findByPk($id);
-//            if (!$test) {
-//                throw new CHttpException(404, 'Unit-тест не найден');
-//            }
-//
-//            $test->status = SoapTest::STATUS_TEST_RUN;
-//            $sel = false;
-//            if ($test->save()){
-//                $sel = true;
-//            }
-//
-//            echo CJSON::encode(
-//                array(
-//                    'selected' => $sel
-//                )
-//            );
-//        }
-//    }
+    /**
+     * @param SoapFunction $function
+     * @return SoapTest
+     * @throws CHttpException
+     */
+    public function createModel(SoapFunction $function)
+    {
+        $model = new SoapTest();
+        $model->soapFunction = $function;
+        $model->function_id = $function->primaryKey;
+        $model->date_create = time();
+        return $model;
+    }
 
-//    public function actionRunTestFunction($id)
-//    {
-//        if(Yii::app()->request->isAjaxRequest){
-//            $func = new SoapFunction();
-//            $func = $func->model()->findByPk($id);
-//            if (!$func) {
-//                throw new CHttpException(404, 'Функция не найдена');
-//            }
-//
-//            $tests = new SoapTest();
-//            $res = $tests->runTestFunction($id);
-//
-//            echo CJSON::encode(
-//                array(
-//                    'count'     => SoapTest::getCountRunningTests($func->service->id),
-//                    'test_result'=> $res['test_result'],
-//                    'test_result_text' => SoapTest::getTestResultByText($res['test_result']),
-//                    'runtime'   => $res['runtime'],
-//                    'date_start'=> is_null($res['date_start']) ? '' : Yii::app()->dateFormatter->format('dd MMMM yyyy HH:mm:ss', $res['date_start'])
-//                )
-//            );
-//        }
-//    }
-//
-//    public function actionRunTestFunction2($id)
-//    {
-//        if(Yii::app()->request->isAjaxRequest){
-//            $func = new SoapFunction();
-//            $func = $func->model()->findByPk($id);
-//            if (!$func) {
-//                throw new CHttpException(404, 'Функция не найдена');
-//            }
-//
-//            $tests = new SoapTest();
-//            $res = $tests->runTestFunction2($id);
-//
-//            foreach($res as $k=>$v){
-//                $res[$k]['test_result_text']= SoapTest::getTestResultByText($v['test_result']);
-//                $res[$k]['date_start']      = Yii::app()->dateFormatter->format('dd MMMM yyyy HH:mm:ss', $v['date_start']);
-//                $res[$k]['last_return']     = mb_strlen($v['last_return']) > 1000 ? mb_substr($v['last_return'], 0, 1000)."…" : $v['last_return'];
-//            }
-//            $count = SoapTest::getCountRunningTestsFunc($id);
-//
-//            echo CJSON::encode(
-//                array(
-//                    'data'  => $res,
-//                    'count' => $count
-//                )
-//            );
-//
-////            echo CJSON::encode(
-////                array(
-////                    'count'     => SoapTest::getCountRunningTestsFunc($id),
-////                    'test_result'=> $res['test_result'],
-////                    'test_result_text' => SoapTest::getTestResultByText($res['test_result']),
-////                    'runtime'   => $res['runtime'],
-////                    'date_start'=> is_null($res['date_start']) ? '' : Yii::app()->dateFormatter->format('dd MMMM yyyy HH:mm:ss', $res['date_start'])
-////                )
-////            );
-//        }
-//    }
-//
-//    public function actionRunTest($id)
-//    {
-//        if(Yii::app()->request->isAjaxRequest){
-//            $test = new SoapTest();
-//            $test = $test->model()->findByPk($id);
-//            if (!$test) {
-//                throw new CHttpException(404, 'Unit-тест не найден');
-//            }
-//            $res = $test->runTest($id);
-//
-//            echo CJSON::encode(
-//                array(
-//                    'count'         => SoapTest::getCountRunningTestsFunc($test->function->id),
-//                    'last_return'   => mb_strlen($res['last_return']) > 1000 ? mb_substr($res['last_return'], 0, 1000)."…" : $res['last_return'],
-//                    'test_result'   => $res['test_result'],
-//                    'test_result_text' => SoapTest::getTestResultByText($res['test_result']),
-//                    'runtime'       => $res['runtime'],
-//                    'date_start'    => is_null($res['date_start']) ? '' : Yii::app()->dateFormatter->format('dd MMMM yyyy HH:mm:ss', $res['date_start'])
-//                )
-//            );
-//        }
-//    }
-//
-//    public function actionRunTestService($id)
-//    {
-//        if(Yii::app()->request->isAjaxRequest){
-//            $service = new SoapService();
-//            $service = $service->model()->findByPk($id);
-//            if (!$service) {
-//                throw new CHttpException(404, 'Сервис не найдена');
-//            }
-//
-//            $tests = new SoapTest();
-//            $res = $tests->runTestService($id);
-//            foreach($res as $k=>$v){
-//                $res[$k]['test_result_text'] = SoapTest::getTestResultByText($v['test_result']);
-//                $res[$k]['date_start'] = Yii::app()->dateFormatter->format('dd MMMM yyyy HH:mm:ss', $v['date_start']);
-//            }
-//            $count = SoapTest::getCountRunningTests($id);
-//
-//            echo CJSON::encode(
-//                array(
-//                    'data'  => $res,
-//                    'count' => $count
-//                )
-//            );
-//        }
-//    }
+    /**
+     * @param int $func_id
+     * @return SoapFunction
+     * @throws CHttpException
+     */
+    public function loadFunction($func_id)
+    {
+        $function = SoapFunction::model()->findByPk($func_id);
+        if ($function === null) {
+            throw new CHttpException(404, 'Функция не найдена.');
+        }
+        return $function;
+    }
+
+    /**
+     * Делаем предварительную настройку.
+     * @param CAction $action
+     * @return boolean
+     */
+    protected function beforeAction($action)
+    {
+        if ($this->_static_assets === null){
+            $this->_static_assets = Yii::app()->assetManager->publish(
+                Yii::app()->getBasePath().'/static',
+                false,
+                -1,
+                YII_DEBUG
+            );
+        }
+        return parent::beforeAction($action);
+    }
+
+    /**
+     * @return string Путь к опубликованным данным.
+     */
+    public function getStaticAssets()
+    {
+        return $this->_static_assets;
+    }
 }
