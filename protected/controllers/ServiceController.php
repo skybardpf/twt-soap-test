@@ -11,7 +11,7 @@ class ServiceController extends Controller
 
     private $_static_assets = null;
 
-    public $pageTitle = 'SOAP Unit тесты | ';
+    public $pageTitle = 'SOAP Unit тесты';
 
 	public function actions()
 	{

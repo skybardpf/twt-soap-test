@@ -18,7 +18,9 @@ class ListAction extends CAction
          * @var $controller TestController
          */
         $controller = $this->controller;
+
         $function = $controller->loadFunction($func_id);
+        $controller->pageTitle .= ' | Список тестов функции "'.$function->name.'"';
 
         $data = SoapTest::getList($function->primaryKey);
         $runningTests = SoapTest::getRunningTests($function->primaryKey);

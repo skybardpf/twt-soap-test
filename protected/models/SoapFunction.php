@@ -257,7 +257,6 @@ class SoapFunction extends CActiveRecord
             $args = $args['data'];
         }
 
-
         $input_params = $this->getParamsByType(SoapFunctionParam::TYPE_INPUT);
         if (empty($input_params)){
             throw new CSoapTestException('Для функции не заданы входящие параметры.');
@@ -276,14 +275,34 @@ class SoapFunction extends CActiveRecord
         $wrong_data_type = array();
 
         $types = SoapFunctionParam::getTypesOfData();
-        foreach ($args as $key=>$value){
-            if (!isset($input_params[$key])){
+//        foreach ($args as $key=>$value){
+//            if (!isset($input_params[$key])){
+//                $not_found[] = $key;
+//            } elseif (empty($key)) {
+//                if ($input_params[$key]->required){
+//                    $required[] = $key;
+//                }
+//            } elseif (!$this->_checkAllType($input_params[$key], $value)) {
+//                if ($output_params[$key]->type_of_data == SoapFunctionParam::TYPE_DATA_ARRAY_VALUES) {
+//                    $type = $types[$output_params[$key]->type_of_data] . ' : ' . $types[$output_params[$key]->array_type_of_data];
+//                } else {
+//                    $type = $types[$output_params[$key]->type_of_data];
+//                }
+//
+//                $wrong_data_type[] = array(
+//                    'key' => $key,
+//                    'type_of_data' => $type
+//                );
+//            }
+//        }
+
+        foreach ($input_params as $key=>$value){
+            if (!empty($input_params[$key]->parent_name)){
+                continue;
+            }
+            if (!isset($args[$key])){
                 $not_found[] = $key;
-            } elseif (empty($key)) {
-                if ($input_params[$key]->required){
-                    $required[] = $key;
-                }
-            } elseif (!$this->_checkAllType($input_params[$key], $value)) {
+            } elseif (!$this->_checkAllType($input_params[$key], $args[$key])) {
                 if ($output_params[$key]->type_of_data == SoapFunctionParam::TYPE_DATA_ARRAY_VALUES) {
                     $type = $types[$output_params[$key]->type_of_data] . ' : ' . $types[$output_params[$key]->array_type_of_data];
                 } else {

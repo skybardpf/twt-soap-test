@@ -21,13 +21,11 @@ class CreateAction extends CAction
          * @var $controller FunctionController
          */
         $controller = $this->controller;
-
         /**
          * @var $service SoapService
          */
         $service = $controller->loadService($service_id);
-        $controller->pageTitle = 'Создание новой функции для сервиса «'.$service->name.'»';
-
+        $controller->pageTitle .= ' | Создание новой функции для сервиса «'.$service->name.'»';
         /**
          * @var $model SoapFunction
          */

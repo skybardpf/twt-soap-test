@@ -7,7 +7,7 @@
  */
 class Group_functionsController extends Controller
 {
-    public $pageTitle = 'SOAP Unit тесты | ';
+    public $pageTitle = 'SOAP Unit тесты';
 
     /**
 	 * Declares class-based actions.

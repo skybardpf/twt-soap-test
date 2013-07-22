@@ -19,9 +19,8 @@
         'Группы функций' => $this->createUrl('/group_functions/list', array('service_id' => $service->primaryKey)),
         'Функции'
     );
-    $this->pageTitle = 'Функции сервиса «'.$service->name.'»';
 
-    echo '<h2>'.$this->pageTitle.'</h2>';
+    echo '<h2>Функции сервиса «'.$service->name.'»</h2>';
 
     $this->widget('bootstrap.widgets.TbButton', array(
         'buttonType' => 'link',
@@ -118,7 +117,7 @@
             array(
                 'class'=> 'bootstrap.widgets.TbButtonColumn',
                 'header' => 'Функция',
-                'template'=>'{update} {view} {delete}',
+                'template'=>'{update} {delete}',
                 'deleteConfirmation' => false,
                 'buttons' => array(
                     'update' => array
@@ -126,11 +125,11 @@
                         'label' => 'Редактирование параметров функции',
                         'url' => 'Yii::app()->createUrl("function/update", array("id"=>$data["id"]))',
                     ),
-                    'view' => array
-                    (
-                        'label' => 'Просмотр функции',
-                        'url' => 'Yii::app()->createUrl("function/view", array("id"=>$data["id"]))',
-                    ),
+//                    'view' => array
+//                    (
+//                        'label' => 'Просмотр функции',
+//                        'url' => 'Yii::app()->createUrl("function/view", array("id"=>$data["id"]))',
+//                    ),
                     'delete' => array
                     (
                         'label' => 'Удалить функцию',

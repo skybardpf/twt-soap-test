@@ -1,20 +1,27 @@
 <?php
 /**
- * Удалить тест SoapTest, указанный в $id.
+ * Удалить, указанный в $id тест SoapTest.
  *
  * @see SoapTest
  */
 class DeleteAction extends CAction
 {
-	public function run($id)
+    /**
+     * @param integer $id
+     * @throws CHttpException
+     */
+    public function run($id)
 	{
+        /**
+         * @var $controller TestController
+         */
+        $controller = $this->controller;
+
         /**
          * @var $model SoapTest
          */
-        $model = SoapTest::model()->findByPk($id);
-        if (!$model) {
-            throw new CHttpException(404, 'Unit-тест не найден.');
-        }
+        $model = $controller->loadModel($id);
+        $controller->pageTitle .= ' | Удаление теста для функции "'.$model->soapFunction->name.'"';
 
 		if (Yii::app()->request->isAjaxRequest) {
 			$model->delete();

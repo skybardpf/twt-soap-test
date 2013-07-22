@@ -12,17 +12,15 @@ class UpdateAction extends CAction
          * @var $controller FunctionController
          */
         $controller = $this->controller;
-
         /**
          * @var $model SoapFunction
          */
         $model = $controller->loadModel($id);
-
         /**
          * @var $service SoapService
          */
         $service = $controller->loadService($model->groupFunctions->soapService->primaryKey);
-        $controller->pageTitle = 'Редактирование функции «'.$model->name.'» для сервиса «'.$service->name.'»';
+        $controller->pageTitle .= ' | Редактирование функции «'.$model->name.'» для сервиса «'.$service->name.'»';
 
         if(isset($_POST['ajax']) && $_POST['ajax']==='model-form-form') {
             echo CActiveForm::validate($model);
@@ -39,6 +37,7 @@ class UpdateAction extends CAction
             $valid = true;
             $model->attributes = $_POST[$class_func];
             if (isset($_POST[$class_func_param]) && !empty($_POST[$class_func_param])){
+                var_dump($_POST[$class_func_param]);die;
                 foreach($_POST[$class_func_param] as $i=>$params){
                     $p = new SoapFunctionParam();
                     $p->attributes = $_POST[$class_func_param][$i];

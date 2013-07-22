@@ -10,10 +10,16 @@ class ListAction extends CAction
 {
 	public function run($service_id)
 	{
-        $service = SoapService::model()->findByPk($service_id);
-        if (!$service) {
-            throw new CHttpException(404, 'Сервис не найден.');
-        }
+        /**
+         * @var $controller FunctionController
+         */
+        $controller = $this->controller;
+        /**
+         * @var $service SoapService
+         */
+        $service = $controller->loadService($service_id);
+
+        $controller->pageTitle .= ' | Список функций сервиса "'.$service->name.'"';
 
         $data = SoapFunction::getList($service->primaryKey);
         $runningFuncTests = array();

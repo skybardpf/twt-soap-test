@@ -2,7 +2,7 @@
  *  @var {Number} window.count_params
  */
 $(document).ready(function(){
-    var array_index = [];
+//    var array_index = [];
 
     $('div.add-output-param ul li a').click(function(){
         var type_of_data = $(this).data('type-of-data');
@@ -65,11 +65,11 @@ $(document).ready(function(){
         var tr = $(this).parents('table.input-params tr');
         var index = $(tr).data('param-index');
 
-        if (array_index[index] === undefined){
-            array_index[index] = 0;
-        } else {
-            array_index[index]++;
-        }
+//        if (array_index[index] === undefined){
+//            array_index[index] = 0;
+//        } else {
+//            array_index[index]++;
+//        }
 
         $.ajax({
             success: function(html){
@@ -86,7 +86,7 @@ $(document).ready(function(){
                 index: index,
                 input_param: true,
                 child: true,
-                child_index: array_index[index]
+                child_index: window.count_params++
             },
             cache: false,
             dataType: 'html'
@@ -99,11 +99,11 @@ $(document).ready(function(){
         var tr = $(this).parents('table.output-params tr');
         var index = $(tr).data('param-index');
 
-        if (array_index[index] === undefined){
-            array_index[index] = 0;
-        } else {
-            array_index[index]++;
-        }
+//        if (array_index[index] === undefined){
+//            array_index[index] = 0;
+//        } else {
+//            array_index[index]++;
+//        }
 
         $.ajax({
             success: function(html){
@@ -120,7 +120,7 @@ $(document).ready(function(){
                 index: index,
                 input_param: false,
                 child: true,
-                child_index: array_index[index]
+                child_index: window.count_params++
             },
             cache: false,
             dataType: 'html'

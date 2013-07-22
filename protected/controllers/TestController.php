@@ -4,6 +4,8 @@ class TestController extends Controller
 {
 	public $defaultAction = 'list';
 
+    public $pageTitle = 'SOAP Unit тесты';
+
     private $_static_assets = null;
 
     public function actions()

@@ -6,9 +6,9 @@
         array(
             'components' => array(
                 'db' => array(
-                    'connectionString' => 'mysql:host=localhost;dbname=twt_soap_test;', // TODO изменить
-                    'username'=>'root', // TODO изменить
-                    'password'=>'123', // TODO изменить
+                    'connectionString' => 'mysql:host=10.10.10.26;dbname=twt_soap_test;',
+                    'username'=>'artektiv',
+                    'password'=>'7SBNYFUS4w',
 
                     'schemaCachingDuration' => 3600,
                     'enableParamLogging' => false,

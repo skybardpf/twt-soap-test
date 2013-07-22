@@ -11,28 +11,30 @@ class RunAction extends CAction
     /**
      * Запускаем тест на выполнение.
      *
-     * @param int $id
-     * @return bool
-     * @throws CHttpException | CException
+     * @param integer $id
      */
 	public function run($id)
 	{
-        try {
-            /**
-             * @var $controller TestController
-             */
-            $controller = $this->controller;
+        if (Yii::app()->request->isAjaxRequest){
+            try {
+                /**
+                 * @var $controller TestController
+                 */
+                $controller = $this->controller;
 
-            /**
-             * @var $test SoapTest
-             */
-            $test = $controller->loadModel($id);
-            if ($test->is_running()){
-                throw new CException('Тест уже запущен.');
-            }
-            $test->run();
+                /**
+                 * @var $test SoapTest
+                 */
+                $test = $controller->loadModel($id);
+                if ($test->is_running()){
+                    echo CJSON::encode(array(
+                        'success' => false,
+                        'message' => 'Тест уже запущен.'
+                    ));
+                    Yii::app()->end();
+                }
+                $test->run();
 
-            if (Yii::app()->request->isAjaxRequest) {
                 echo CJSON::encode(array(
                     'success' => true,
                     'data' => array(
@@ -46,16 +48,12 @@ class RunAction extends CAction
                     )
                 ));
                 Yii::app()->end();
-            }
-        } catch(CException $e){
-            if (Yii::app()->request->isAjaxRequest) {
+            } catch(CException $e){
                 echo CJSON::encode(array(
                     'success' => false,
                     'message' => $e->getMessage()
                 ));
                 Yii::app()->end();
-            } else {
-                throw new CHttpException(500, $e->getMessage());
             }
         }
 	}

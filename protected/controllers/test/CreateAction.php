@@ -16,6 +16,7 @@ class CreateAction extends CAction
 
         $function = $controller->loadFunction($func_id);
         $model = $controller->createModel($function);
+        $controller->pageTitle .= ' | Добавление теста для функции "'.$function->name.'"';
 
 		if(isset($_POST['ajax']) && $_POST['ajax']==='model-form-form') {
 			echo CActiveForm::validate($model);
