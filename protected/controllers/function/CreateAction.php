@@ -53,16 +53,27 @@ class CreateAction extends CAction
                     foreach($_POST[$class_func_param]['input'] as $i=>$params){
                         $p = new SoapFunctionParam();
                         $p->attributes = $params;
-                        $p->function_id = $model->primaryKey;
+//                        $p->function_id = $model->primaryKey;
 
                         if (isset($params['__children__'])){
                             $parent = $params['__children__'];
                             foreach($parent as $j=>$attr){
                                 $child = new SoapFunctionParam();
                                 $child->attributes = $attr;
-                                $child->function_id = $model->primaryKey;
+//                                $child->function_id = $model->primaryKey;
                                 $p->children[$j] = $child;
                                 $valid = $child->validate() && $valid;
+
+                                if (isset($attr['--element_table--'])){
+                                    $elements = $attr['--element_table--'];
+                                    foreach($elements as $k=>$element){
+                                        $el = new SoapFunctionParam();
+                                        $el->attributes = $element;
+//                                        $el->function_id = $model->primaryKey;
+                                        $child->children[$k] = $el;
+                                        $valid = $el->validate() && $valid;
+                                    }
+                                }
                             }
                         }
                         $input_params[$i] = $p;
@@ -77,16 +88,27 @@ class CreateAction extends CAction
                     foreach($_POST[$class_func_param]['output'] as $i=>$params){
                         $p = new SoapFunctionParam();
                         $p->attributes = $params;
-                        $p->function_id = $model->primaryKey;
+//                        $p->function_id = $model->primaryKey;
 
                         if (isset($params['__children__'])){
                             $parent = $params['__children__'];
                             foreach($parent as $j=>$attr){
                                 $child = new SoapFunctionParam();
                                 $child->attributes = $attr;
-                                $child->function_id = $model->primaryKey;
+//                                $child->function_id = $model->primaryKey;
                                 $p->children[$j] = $child;
                                 $valid = $child->validate() && $valid;
+
+                                if (isset($attr['--element_table--'])){
+                                    $elements = $attr['--element_table--'];
+                                    foreach($elements as $k=>$element){
+                                        $el = new SoapFunctionParam();
+                                        $el->attributes = $element;
+//                                        $el->function_id = $model->primaryKey;
+                                        $child->children[$k] = $el;
+                                        $valid = $el->validate() && $valid;
+                                    }
+                                }
                             }
                         }
                         $output_params[$i] = $p;
@@ -98,6 +120,8 @@ class CreateAction extends CAction
             if ($valid && $model->validate()){
                 try {
                     if ($model->save()){
+//
+
                         /**
                          * @var $p SoapFunctionParam
                          */
@@ -111,13 +135,20 @@ class CreateAction extends CAction
                                 $child->parent_id = $p->primaryKey;
                                 $child->function_id = $model->primaryKey;
                                 $child->save();
+
+                                /**
+                                 * @var $element SoapFunctionParam
+                                 */
+                                foreach($child->children as $element){
+                                    $element->parent_id = $child->primaryKey;
+                                    $element->function_id = $model->primaryKey;
+                                    $element->save();
+                                }
                             }
                         }
 
-                        foreach ($model->outputParams as $p){
-                            $p->delete();
-                        }
                         /**
+                         * Сохраняем выходные параметры
                          * @var $p SoapFunctionParam
                          */
                         foreach ($output_params as $p){
@@ -127,9 +158,18 @@ class CreateAction extends CAction
                              * @var $child SoapFunctionParam
                              */
                             foreach($p->children as $child){
-                                $child->parent_id = $p->primaryKey;
                                 $child->function_id = $model->primaryKey;
+                                $child->parent_id = $p->primaryKey;
                                 $child->save();
+
+                                /**
+                                 * @var $element SoapFunctionParam
+                                 */
+                                foreach($child->children as $element){
+                                    $element->function_id = $model->primaryKey;
+                                    $element->parent_id = $child->primaryKey;
+                                    $element->save();
+                                }
                             }
                         }
 
@@ -153,7 +193,6 @@ class CreateAction extends CAction
                 'service' => $service,
                 'input_params' => $input_params,
                 'output_params' => $output_params,
-                'count_children' => 0
             )
         );
 	}

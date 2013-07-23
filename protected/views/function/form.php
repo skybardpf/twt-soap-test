@@ -15,11 +15,13 @@
 ?>
 
 <?php
-//    echo '<p id="loadingPic"></br></p>';
-
-    echo '<h2>'.$this->pageTitle.'</h2>';
-
     Yii::app()->clientScript->registerScriptFile($this->getStaticAssets() . '/js/function/form.js');
+
+    if ($model->isNewRecord) {
+        echo '<h2>Создание функции для сервиса "'.CHtml::encode($service->name).'"</h2>';
+    } else {
+        echo '<h2>Редактирование функции "'.CHtml::encode($model->name).'" для сервиса "'.CHtml::encode($service->name).'"</h2>';
+    }
 
     $this->breadcrumbs = array(
         'Сервисы' => $this->createUrl('service/list'),
