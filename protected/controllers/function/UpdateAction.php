@@ -32,44 +32,88 @@ class UpdateAction extends CAction
 
         $input_params = array();
         $output_params = array();
-        $count_children = 0;
 
         if (isset($_POST[$class_func]) && !empty($_POST[$class_func])) {
             $valid = true;
             $model->attributes = $_POST[$class_func];
             if (isset($_POST[$class_func_param]) && !empty($_POST[$class_func_param])){
-                foreach($_POST[$class_func_param] as $i=>$params){
-                    $p = new SoapFunctionParam();
-                    $p->attributes = $_POST[$class_func_param][$i];
-                    $p->function_id = $model->primaryKey;
+                /**
+                 * Входящие параметры
+                 */
+                if (isset($_POST[$class_func_param]['input'])){
+                    foreach($_POST[$class_func_param]['input'] as $i=>$params){
+                        $p = new SoapFunctionParam();
+                        $p->attributes = $params;
+                        $p->function_id = $model->primaryKey;
 
-                    if (isset($_POST[$class_func_param][$i]['__children__'])){
-                        $parent = $_POST[$class_func_param][$i]['__children__'];
-                        foreach($parent as $j=>$attr){
-                            $child = new SoapFunctionParam();
-                            $child->attributes = $attr;
-                            $child->function_id = $model->primaryKey;
-                            $p->children[$j] = $child;
-                            $valid = $child->validate() && $valid;
+                        if (isset($params['__children__'])){
+                            $parent = $params['__children__'];
+                            foreach($parent as $j=>$attr){
+                                $child = new SoapFunctionParam();
+                                $child->attributes = $attr;
+                                $child->function_id = $model->primaryKey;
+                                $p->children[$j] = $child;
+                                $valid = $child->validate() && $valid;
+
+                                if (isset($attr['--element_table--'])){
+                                    $elements = $attr['--element_table--'];
+                                    foreach($elements as $k=>$element){
+                                        $el = new SoapFunctionParam();
+                                        $el->attributes = $element;
+                                        $el->function_id = $model->primaryKey;
+                                        $child->children[$k] = $el;
+                                        $valid = $el->validate() && $valid;
+                                    }
+                                }
+                            }
                         }
-                    }
-
-                    if ($p->input_param){
                         $input_params[$i] = $p;
-                    } else {
-                        $output_params[$i] = $p;
+                        $valid = $p->validate() && $valid;
                     }
-                    $valid = $p->validate() && $valid;
+                }
+
+                /**
+                 * Выходные параметры
+                 */
+                if (isset($_POST[$class_func_param]['output'])){
+                    foreach($_POST[$class_func_param]['output'] as $i=>$params){
+                        $p = new SoapFunctionParam();
+                        $p->attributes = $params;
+                        $p->function_id = $model->primaryKey;
+
+                        if (isset($params['__children__'])){
+                            $parent = $params['__children__'];
+                            foreach($parent as $j=>$attr){
+                                $child = new SoapFunctionParam();
+                                $child->attributes = $attr;
+                                $child->function_id = $model->primaryKey;
+                                $p->children[$j] = $child;
+                                $valid = $child->validate() && $valid;
+
+                                if (isset($attr['--element_table--'])){
+                                    $elements = $attr['--element_table--'];
+                                    foreach($elements as $k=>$element){
+                                        $el = new SoapFunctionParam();
+                                        $el->attributes = $element;
+                                        $el->function_id = $model->primaryKey;
+                                        $child->children[$k] = $el;
+                                        $valid = $el->validate() && $valid;
+                                    }
+                                }
+                            }
+                        }
+                        $output_params[$i] = $p;
+                        $valid = $p->validate() && $valid;
+                    }
                 }
             }
 
             if ($valid && $model->validate()){
                 try {
                     if ($model->save()){
-                        foreach ($model->soapFunctionParams as $p){
+                        foreach ($model->inputParams as $p){
                             $p->delete();
                         }
-
                         /**
                          * @var $p SoapFunctionParam
                          */
@@ -79,11 +123,24 @@ class UpdateAction extends CAction
                              * @var $child SoapFunctionParam
                              */
                             foreach($p->children as $child){
-                                $child->parent_name = $p->name;
+                                $child->parent_id = $p->primaryKey;
                                 $child->save();
+
+                                /**
+                                 * @var $element SoapFunctionParam
+                                 */
+                                foreach($child->children as $element){
+                                    $element->parent_id = $child->primaryKey;
+                                    $element->save();
+                                }
                             }
                         }
+
+                        foreach ($model->outputParams as $p){
+                            $p->delete();
+                        }
                         /**
+                         * Сохраняем выходные параметры
                          * @var $p SoapFunctionParam
                          */
                         foreach ($output_params as $p){
@@ -92,8 +149,16 @@ class UpdateAction extends CAction
                              * @var $child SoapFunctionParam
                              */
                             foreach($p->children as $child){
-                                $child->parent_name = $p->name;
+                                $child->parent_id = $p->primaryKey;
                                 $child->save();
+
+                                /**
+                                 * @var $element SoapFunctionParam
+                                 */
+                                foreach($child->children as $element){
+                                    $element->parent_id = $child->primaryKey;
+                                    $element->save();
+                                }
                             }
                         }
 
@@ -109,18 +174,30 @@ class UpdateAction extends CAction
                 }
             }
         } else {
-            $i = 0;
-            foreach ($model->soapFunctionParams as $p){
-                if (empty($p->parent_name)){
+            foreach($model->inputParams as $p){
+                if (empty($p->parent_id)){
                     $p->children = $p->getChildren();
-                    $count_children += count($p->children);
 
-                    if ($p->input_param){
-                        $input_params[$i] = $p;
-                    } else {
-                        $output_params[$i] = $p;
+                    foreach($p->children as $k=>$child){
+                        if ($child->type_of_data == SoapFunctionParam::TYPE_DATA_ELEMENT_TABLE){
+                            $p->children[$k]->children = $child->getChildren();
+                        }
                     }
-                    $i++;
+
+                    $input_params[] = $p;
+                }
+            }
+            foreach($model->outputParams as $p){
+                if (empty($p->parent_id)){
+                    $p->children = $p->getChildren();
+
+                    foreach($p->children as $k=>$child){
+                        if ($child->type_of_data == SoapFunctionParam::TYPE_DATA_ELEMENT_TABLE){
+                            $p->children[$k]->children = $child->getChildren();
+                        }
+                    }
+
+                    $output_params[] = $p;
                 }
             }
         }
@@ -132,7 +209,6 @@ class UpdateAction extends CAction
                 'service' => $service,
                 'input_params' => $input_params,
                 'output_params' => $output_params,
-                'count_children' => $count_children
             )
         );
 	}

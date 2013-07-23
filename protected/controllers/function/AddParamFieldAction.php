@@ -26,13 +26,12 @@ class AddParamFieldAction extends CAction
             $controller = $this->controller;
 
             $model = new SoapFunctionParam();
-            $types = SoapFunctionParam::getTypesOfData();
             $model->input_param = ($input_param == 'true') ? 1 : 0;
             $child = ($child == 'true') ? true : false;
-            $model->type_of_data = (!isset($types[$type])) ? SoapFunctionParam::DEFAULT_TYPE_OF_DATA : $type;
 
             $controller->renderPartial('_add_param_field', array(
                 'model' => $model,
+                'type' => $type,
                 'index' => $index,
                 'child' => $child,
                 'child_index' => $child_index

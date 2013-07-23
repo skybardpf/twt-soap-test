@@ -42,6 +42,9 @@ class FunctionController extends Controller
             'add_param_field' => array(
                 'class' => 'application.controllers.function.AddParamFieldAction',
             ),
+            'add_element_table' => array(
+                'class' => 'application.controllers.function.AddElementTableAction',
+            ),
 		);
 	}
 
