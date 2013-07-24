@@ -122,14 +122,20 @@ class SoapFunction extends CActiveRecord
         $errors = array();
         if (is_array($value) && !empty($value)){
             $types = SoapFunctionParam::getTypesOfData();
+
+
             $children = $param->getChildren();
             if (!empty($children)){
                 $data = array();
                 foreach ($value as $v){
                     $data[$v['Поле']] = $v['Значение'];
                 }
+
                 foreach ($children as $v){
-                    if (!isset($data[$v->name])){
+                    if ($this->type == self::FUNCTION_TYPE_SAVE && !isset($data['id'])){
+                        $data['id'] = '';
+                    }
+                    if (!array_key_exists($v->name, $data)){
                         $errors[] = ' - Не найдено {'.$v->name.'}';
                     } elseif (!$this->_checkNativeType($v->type_of_data, $data[$v->name], $v->required)){
                         $errors[] = ' - Неправильный тип {'.$v->name.'} - {'.$types[$v->type_of_data].'}';
@@ -404,14 +410,11 @@ class SoapFunction extends CActiveRecord
             }
         }
 
-//        $input_params = $this->getParamsByType(SoapFunctionParam::TYPE_INPUT);
         if (empty($this->inputParams)){
             throw new CSoapTestException('Для функции не заданы входящие параметры.');
         }
 
-//        $output_params = array();
         if ($this->type != self::FUNCTION_TYPE_DELETE && $this->type != self::FUNCTION_TYPE_SAVE){
-//            $output_params = $this->getParamsByType(SoapFunctionParam::TYPE_OUTPUT);
             if (empty($this->outputParams)){
                 throw new CSoapTestException('Для функции не заданы выходные параметры.');
             }

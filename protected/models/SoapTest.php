@@ -193,7 +193,7 @@ class SoapTest extends CActiveRecord {
         $test_result = self::TEST_RESULT_NOT_EXECUTED;
         $this->date_start = time();
         $this->date_end = NULL;
-//        $this->status = self::STATUS_TEST_RUN;
+        $this->status = self::STATUS_TEST_RUN;
         $this->test_result = $test_result;
         $this->last_return = $last_return;
         $this->last_errors = $last_errors;
