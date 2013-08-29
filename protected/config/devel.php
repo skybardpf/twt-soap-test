@@ -10,6 +10,7 @@
                     'username'=>'artektiv',
                     'password'=>'qazwsxedc',
 
+                    'charset' => 'utf8',
                     'schemaCachingDuration' => 10,
                     'enableParamLogging' => true,
                     'enableProfiling' => true,

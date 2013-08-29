@@ -7,22 +7,21 @@
  * @var FunctionController  $this
  * @var SoapService         $service
  * @var SoapFunction        $model
+ * @var TbActiveForm        $form
+ *
  * @var SoapFunctionParam[] $input_params
  * @var SoapFunctionParam[] $output_params
- * @var integer             $count_children
- * @var TbActiveForm        $form
  */
 ?>
 
-<script>
-    window.count_params = <?= count($output_params+$input_params); ?>;
-    window.count_children_params = <?= $count_children; ?>;
-</script>
-
 <?php
-    echo '<h2>'.$this->pageTitle.'</h2>';
-
     Yii::app()->clientScript->registerScriptFile($this->getStaticAssets() . '/js/function/form.js');
+
+    if ($model->isNewRecord) {
+        echo '<h2>Создание функции для сервиса "'.CHtml::encode($service->name).'"</h2>';
+    } else {
+        echo '<h2>Редактирование функции "'.CHtml::encode($model->name).'" для сервиса "'.CHtml::encode($service->name).'"</h2>';
+    }
 
     $this->breadcrumbs = array(
         'Сервисы' => $this->createUrl('service/list'),
@@ -86,6 +85,7 @@
                 if (empty($item->children)){
                     $this->renderPartial('_add_param_field', array(
                         'model' => $item,
+                        'type' => $item->type_of_data,
                         'index' => $i,
                         'child' => false,
                         'child_index' => -1
@@ -144,6 +144,7 @@
                 if (empty($item->children)){
                     $this->renderPartial('_add_param_field', array(
                         'model' => $item,
+                        'type' => $item->type_of_data,
                         'index' => $i,
                         'child' => false,
                         'child_index' => -1
@@ -179,3 +180,4 @@
 <?php
     $this->endWidget();
 ?>
+
