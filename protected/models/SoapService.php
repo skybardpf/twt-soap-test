@@ -189,18 +189,19 @@ class SoapService extends CActiveRecord
             SELECT
                 s.id,
                 SUM(
-                    CASE status WHEN '.SoapTest::STATUS_TEST_STOP.'
-                    THEN(date_end - date_start)
+                    CASE t.status WHEN '.SoapTest::STATUS_TEST_STOP.'
+                    THEN(t.date_end - t.date_start)
                     ELSE 0 END
                 ) AS `runtime`,
-                MIN(date_start) AS `date_start`,
-                MAX(test_result) AS `test_result`
-            FROM '.SoapFunction::model()->tableName().' f
-            JOIN '.SoapTest::model()->tableName().' t ON t.function_id = f.id
-            JOIN '.SoapService::model()->tableName().' s ON s.id = f.service_id
+                MIN(t.date_start) AS `date_start`,
+                MAX(t.test_result) AS `test_result`
+            FROM '.SoapService::model()->tableName().' s
+            JOIN '.GroupFunctions::model()->tableName().' gf ON gf.service_id = s.id
+            JOIN '.SoapFunction::model()->tableName().' f ON gf.id = f.group_id
+            JOIN '.SoapTest::model()->tableName().' t ON f.id = t.function_id
             WHERE s.id IN ('.implode(',', $listIds).')
             GROUP BY f.id
-            HAVING MAX(status)='.SoapTest::STATUS_TEST_STOP
+            HAVING MAX(t.status)='.SoapTest::STATUS_TEST_STOP
         );
         return $cmd->queryAll();
     }
@@ -260,7 +261,7 @@ class SoapService extends CActiveRecord
             $group = new GroupFunctions();
             $group->service_id = $this->primaryKey;
             $group->name = GroupFunctions::GROUP_NAME_DEFAULT;
-            $group->save();
+            $group->insert();
         }
 	}
 
