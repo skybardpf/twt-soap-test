@@ -330,7 +330,7 @@ class SoapFunction extends CActiveRecord
 
         $types = SoapFunctionParam::getTypesOfData();
         if($this->type == self::FUNCTION_TYPE_DELETE){
-            if (!is_bool($return)){
+            if ((!is_bool($return) && (strtolower($return) != 'true') && (strtolower($return) != 'false'))){
                 $wrong_data_type[] = array(
                     'key' => 'return',
                     'type_of_data' => SoapFunctionParam::TYPE_DATA_BOOLEAN
