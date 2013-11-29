@@ -1,13 +1,13 @@
 <?php
-    /**
-     * Список SOAP сервисов.
-     *
-     * @author Skibardin A.A. <skybardpf@artektiv.ru>
-     *
-     * @var $this ServiceController
-     * @var $data SoapService[]
-     * @var $runningServiceTests  array
-     */
+/**
+ * Список SOAP сервисов.
+ *
+ * @author Skibardin A.A. <skybardpf@artektiv.ru>
+ *
+ * @var ServiceController $this
+ * @var SoapService[] $data
+ * @var array $runningServiceTests
+ */
 ?>
 
 <script>
@@ -15,7 +15,7 @@
 </script>
 
 <?php
-    Yii::app()->clientScript->registerScriptFile($this->getStaticAssets() . '/js/service/list.js');
+    Yii::app()->clientScript->registerScriptFile($this->getBaseAssets() . '/js/service/list.js');
 
     $this->breadcrumbs=array(
         'Сервисы' => array('/service'),

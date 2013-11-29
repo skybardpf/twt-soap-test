@@ -11,7 +11,7 @@ if ($_SERVER['HTTP_HOST'] == 'twt-soap-test') {
     // specify how many levels of call stack should be shown in each log message
     defined('YII_TRACE_LEVEL') or define('YII_TRACE_LEVEL',3);
 
-    $config = dirname(__FILE__).'/../protected/config/web/dev.php';
+    $config = dirname(__FILE__).'/../protected/config/web/local.php';
 
 } elseif ($_SERVER['HTTP_HOST'] == 'twt-soap-test.skybardpf.devel') {
     // remove the following lines when in production mode
