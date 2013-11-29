@@ -11,7 +11,7 @@ if ($_SERVER['HTTP_HOST'] == 'twt-soap-test') {
     // specify how many levels of call stack should be shown in each log message
     defined('YII_TRACE_LEVEL') or define('YII_TRACE_LEVEL',3);
 
-    $config = dirname(__FILE__).'/../protected/config/dev.php';
+    $config = dirname(__FILE__).'/../protected/config/web/dev.php';
 
 } elseif ($_SERVER['HTTP_HOST'] == 'twt-soap-test.skybardpf.devel') {
     // remove the following lines when in production mode
@@ -19,13 +19,14 @@ if ($_SERVER['HTTP_HOST'] == 'twt-soap-test') {
     // specify how many levels of call stack should be shown in each log message
     defined('YII_TRACE_LEVEL') or define('YII_TRACE_LEVEL',3);
 
-    $config = dirname(__FILE__).'/../protected/config/devel.php';
+    $config = dirname(__FILE__).'/../protected/config/web/devel.php';
 } else  {
     defined('YII_DEBUG') or define('YII_DEBUG',false);
 
-    $config = dirname(__FILE__).'/../protected/config/production.php';
+    $config = dirname(__FILE__).'/../protected/config/web/production.php';
 }
 
-//var_dump($config);die;
+mb_internal_encoding('UTF-8');
+
 require_once($yii);
 Yii::createWebApplication($config)->run();

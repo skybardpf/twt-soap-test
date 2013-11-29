@@ -1,16 +1,16 @@
 <?php
     return CMap::mergeArray(
         // наследуемся от main.php
-        require(dirname(__FILE__).'/main.php'),
+        require(dirname(__FILE__) . '/main.php'),
 
         array(
             'components' => array(
                 'db' => array(
-                    'connectionString' => 'mysql:host=localhost;dbname=twt_test_migr;',
-                    'username'=>'root',
-                    'password'=>'123456',
-                    'charset' => 'utf8',
+                    'connectionString' => 'mysql:host=192.168.0.205;dbname=twt_soap_test;',
+                    'username'=>'artektiv',
+                    'password'=>'qazwsxedc',
 
+                    'charset' => 'utf8',
                     'schemaCachingDuration' => 10,
                     'enableParamLogging' => true,
                     'enableProfiling' => true,
