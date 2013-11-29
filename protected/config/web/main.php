@@ -42,6 +42,11 @@ return array(
             'errorAction' => 'site/error',
         ),
 
+        'authManager' => array(
+            // показываем ошибки только в режиме отладки
+            'showErrors' => YII_DEBUG
+        ),
+
         'log' => array(
             'class' => 'CLogRouter',
             'routes' => array(
@@ -50,18 +55,34 @@ return array(
                     'levels' => 'error, warning',
                 ),
                 array(
+                    // направляем результаты профайлинга в ProfileLogRoute (отображается
+                    // внизу страницы)
+                    'class' => 'CProfileLogRoute',
+                    'levels' => 'profile',
+                    'enabled' => true,
+                ),
+                array(
+                    'class' => 'CWebLogRoute',
+                    'categories' => 'application',
+                    'levels' => 'error, warning, trace, profile, info',
+                ),
+                array(
                     'class' => 'ext.yii-debug-toolbar.YiiDebugToolbarRoute',
                     'ipFilters' => array('127.0.0.1', '192.168.1.*'),
                 ),
-
+                array(
+                    'class' => 'CWebLogRoute',
+                    'categories' => 'application',
+                    'showInFireBug' => true
+                ),
+                array(
+                    'class' => 'CEmailLogRoute',
+                    'categories' => 'error',
+                    'emails' => array('skybardpf@artektiv.ru'),
+                    'sentFrom' => 'error@twt-soap-test.artektiv.ru',
+                    'subject' => 'Error at twt-soap-test.artektiv.ru'
+                ),
             ),
-        ),
-
-        'clientScript' => array(
-            'scriptMap' => array( //                'jquery.js'     => 'http://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.js',
-                //                'jquery.min.js' => 'http://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js',
-                //                'jquery.ui.min.js' => dirname(__FILE__).'/../extensions/jquery-ui/js/jquery-19.1.1.js',
-            )
         ),
 
         'urlManager' => array(

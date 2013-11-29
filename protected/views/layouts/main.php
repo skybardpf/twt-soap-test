@@ -18,5 +18,24 @@ Yii::app()->bootstrap->registerCoreScripts();
 
 	<title><?php echo CHtml::encode($this->pageTitle); ?></title>
 </head>
-<?=$content?>
+<body>
+
+<header class="container">
+    <?php if (isset($this->breadcrumbs)) {
+        $this->widget('bootstrap.widgets.TbBreadcrumbs', array(
+            'links' => $this->breadcrumbs,
+        ));
+    }?>
+</header>
+
+<section class="container">
+    <?php echo $content; ?>
+</section>
+
+<footer class="container">
+    <hr>
+    © <?= Yii::app()->name ?>, <?= date('Y') ?>
+</footer>
+
+</body>
 </html>
