@@ -1,24 +1,9 @@
 <?php
-
+/**
+ * Class SiteController
+ */
 class SiteController extends Controller
 {
-	/**
-	 * Declares class-based actions.
-	 */
-	public function actions()
-	{
-		return array();
-	}
-
-	/**
-	 * This is the default 'index' action that is invoked
-	 * when an action is not explicitly requested by users.
-	 */
-	public function actionIndex()
-	{
-		$this->render('index');
-	}
-
 	/**
 	 * This is the action to handle external exceptions.
 	 */

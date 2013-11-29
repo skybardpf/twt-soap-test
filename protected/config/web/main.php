@@ -17,7 +17,7 @@ return array(
         'application.components.*',
     ),
 
-    'modules' => array(
+    /*'modules' => array(
         'gii' => array(
             'class' => 'system.gii.GiiModule',
             'password' => '1111',
@@ -26,7 +26,7 @@ return array(
                 'bootstrap.gii',
             ),
         ),
-    ),
+    ),*/
 
     // application components
     'components' => array(
