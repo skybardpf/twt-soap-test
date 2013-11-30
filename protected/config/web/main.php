@@ -17,16 +17,16 @@ return array(
         'application.components.*',
     ),
 
-    /*'modules' => array(
+    'modules' => array(
         'gii' => array(
             'class' => 'system.gii.GiiModule',
-            'password' => '1111',
+            'password' => '1',
             'ipFilters' => array('127.0.0.1', '::1', '192.168.1.*'),
             'generatorPaths' => array(
                 'bootstrap.gii',
             ),
         ),
-    ),*/
+    ),
 
     // application components
     'components' => array(
