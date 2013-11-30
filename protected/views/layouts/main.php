@@ -6,6 +6,13 @@
 Yii::app()->bootstrap->registerAllCss();
 Yii::app()->bootstrap->registerCoreScripts();
 
+$clientScript = Yii::app()->clientScript;
+$clientScript->registerCoreScript('jquery.ui');
+$clientScript->registerCssFile(
+    $clientScript->getCoreScriptUrl().'/jui/css/base/jquery-ui.css'
+);
+$this->widget('ext.widgets.loading.LoadingWidget');
+
 ?>
 <!DOCTYPE html>
 <html lang="<?= Yii::app()->language ?>">
@@ -20,6 +27,10 @@ Yii::app()->bootstrap->registerCoreScripts();
     <?php
     if (isset($this->breadcrumbs)) {
         $this->widget('bootstrap.widgets.TbBreadcrumbs', array(
+            'homeLink' => CHtml::link(
+                Yii::t('app', 'Сервисы'),
+                Yii::app()->createAbsoluteUrl('/')
+            ),
             'links' => $this->breadcrumbs,
         ));
     }

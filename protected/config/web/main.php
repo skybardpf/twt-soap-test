@@ -3,7 +3,7 @@ Yii::setPathOfAlias('bootstrap', dirname(__FILE__) . '/../../extensions/bootstra
 
 return array(
     'basePath' => dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..',
-    'name' => 'TWT SOAP Tests Ver. 2',
+    'name' => Yii::t('app', 'TWT SOAP Тесты. Версия 2'),
     'sourceLanguage' => 'root',
     'language' => 'ru',
     'defaultController' => 'service',

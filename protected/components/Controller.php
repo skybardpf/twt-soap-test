@@ -22,14 +22,15 @@ class Controller extends CController
     public $breadcrumbs = array();
 
     /**
-     * @var string | null Путь к опубликованной папку assets.
+     * @var string | null Путь к опубликованной папке assets.
      */
     private static $_baseAssets = null;
 
     /**
      * @return string Возвращает путь к опубликованной папке assets.
      */
-    public function getBaseAssets(){
+    public function getBaseAssets()
+    {
         if (self::$_baseAssets === null) {
             self::$_baseAssets = Yii::app()->assetManager->publish(
                 Yii::app()->getBasePath() . '/static',

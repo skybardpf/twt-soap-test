@@ -1,23 +1,20 @@
 <?php
 /**
- * Выводим список всех действующих SOAP сервисов.
+ * Список действующих SOAP сервисов.
  *
  * @author Skibardin A.A. <skybardpf@artektiv.ru>
  *
  * @see SoapService
  */
-class ListAction extends CAction
+class IndexAction extends CAction
 {
-    /**
-     * Список SOAP сервисов.
-     */
     public function run()
 	{
         /**
-         * @var $controller ServiceController
+         * @var ServiceController $controller
          */
         $controller = $this->controller;
-        $controller->pageTitle .= 'Список SOAP сервисов';
+        $controller->pageTitle = Yii::app()->name . ' | SOAP сервисы';
 
         $data = SoapService::getList();
         $runningServiceTests = array();
@@ -29,7 +26,7 @@ class ListAction extends CAction
         }
 
         $this->controller->render(
-            'list',
+            'index',
             array(
                 'data' => $data,
                 'runningServiceTests' => $runningServiceTests

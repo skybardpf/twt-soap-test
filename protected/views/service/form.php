@@ -1,35 +1,42 @@
 <?php
-    /**
-     * @var $this   ServiceController
-     * @var $model  SoapService
-     * @var $form   TbActiveForm
-     */
+/**
+ * @var ServiceController $this
+ * @var SoapService $model
+ *
+ */
 
-    $this->breadcrumbs=array(
-        'Сервисы' => $this->createUrl('/service/list'),
-        ($model->isNewRecord ? 'Добавление' : 'Редактирование'). ' сервиса',
-    );
+$title = Yii::t('app', ($model->isNewRecord ? 'Добавление' : 'Редактирование') . ' сервиса');
+$this->breadcrumbs = array($title);
 
-    $form = $this->beginWidget('bootstrap.widgets.TbActiveForm', array(
-        'id' => 'model-form-form',
-        'type' => 'horizontal',
-        'enableAjaxValidation' => true,
+/**
+ * @var TbActiveForm $form
+ */
+$form = $this->beginWidget('bootstrap.widgets.TbActiveForm', array(
+    'id' => 'model-form-form',
+    'type' => 'horizontal',
+    'enableAjaxValidation' => true,
+));
 
-    ));
+echo CHtml::tag('h2', array(), $title . ($model->isNewRecord ?  '' : ' «'.CHtml::encode($model->name).'»'));
 
-    echo CHtml::tag('h2', array(), ($model->isNewRecord ? 'Добавление сервиса' : 'Редактирование сервиса «'.$model->name.'»'));
-
+if ($model->hasErrors()){
     echo $form->errorSummary($model);
+}
 
-    echo $form->textFieldRow($model,'name', array('class' => 'input-xxlarge'));
-    echo $form->textFieldRow($model,'url', array('class' => 'input-xxlarge'));
-    echo $form->textFieldRow($model,'login', array('class' => 'input-xxlarge'));
-    echo $form->textFieldRow($model,'password', array('class' => 'input-xxlarge'));
+echo $form->textFieldRow($model, 'name', array('class' => 'input-xxlarge'));
+echo $form->textFieldRow($model, 'url', array('class' => 'input-xxlarge'));
+echo $form->textFieldRow($model, 'login', array('class' => 'input-xxlarge'));
+echo $form->textFieldRow($model, 'password', array('class' => 'input-xxlarge'));
 
-    $this->widget('bootstrap.widgets.TbButton', array(
-        'buttonType' => 'submit',
-        'type' => 'primary',
-        'label' => ($model->isNewRecord ? 'Добавить' : 'Сохранить'),
-    ));
+$this->widget('bootstrap.widgets.TbButton', array(
+    'buttonType' => 'submit',
+    'type' => 'primary',
+    'label' => Yii::t('app', ($model->isNewRecord ? 'Добавить' : 'Сохранить')),
+));
+echo '&nbsp;&nbsp;';
+$this->widget('bootstrap.widgets.TbButton', array(
+    'url' => $this->createUrl('index'),
+    'label' => Yii::t('app', 'Отмена'),
+));
 
-    $this->endWidget();
+$this->endWidget();
