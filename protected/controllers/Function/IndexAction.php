@@ -1,14 +1,14 @@
 <?php
 /**
  * Показать список функций (SoapFunction) для определенного SOAP сервиса (SoapService).
- * Сервис определяется параметром $service_id.
+ * Сервис определяется параметром $sid.
  *
  * @see SoapService
  * @see SoapFunction
  */
-class ListAction extends CAction
+class IndexAction extends CAction
 {
-	public function run($service_id)
+	public function run($sid)
 	{
         /**
          * @var $controller FunctionController
@@ -17,7 +17,7 @@ class ListAction extends CAction
         /**
          * @var $service SoapService
          */
-        $service = $controller->loadService($service_id);
+        $service = $controller->loadService($sid);
 
         $controller->pageTitle .= ' | Список функций сервиса "'.$service->name.'"';
 
@@ -29,7 +29,7 @@ class ListAction extends CAction
                 $runningFuncTests[] = $v['id'];
             }
         }
-        $this->controller->render('list', array(
+        $this->controller->render('index', array(
             'data' => $data,
             'service' => $service,
             'runningFuncTests' => $runningFuncTests

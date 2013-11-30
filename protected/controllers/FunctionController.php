@@ -14,35 +14,16 @@ class FunctionController extends Controller
 	public function actions()
 	{
 		return array(
-            'list' => array(
-                'class' => 'application.controllers.function.ListAction',
-            ),
-            'create' => array(
-                'class' => 'application.controllers.function.CreateAction',
-            ),
-            'update' => array(
-                'class' => 'application.controllers.function.UpdateAction',
-            ),
-            'delete' => array(
-                'class' => 'application.controllers.function.DeleteAction',
-            ),
+            'index' => 'application.controllers.Function.IndexAction',
+            'create' => 'application.controllers.Function.CreateAction',
+            'update' => 'application.controllers.Function.UpdateAction',
+            'delete' => 'application.controllers.Function.DeleteAction',
 
-            'run_tests' => array(
-                'class' => 'application.controllers.function.Run_testsAction',
-            ),
-            'polling_run_tests' => array(
-                'class' => 'application.controllers.function.Polling_run_testsAction',
-            ),
-            'delete_tests' => array(
-                'class' => 'application.controllers.function.Delete_testsAction',
-            ),
-
-            'add_param_field' => array(
-                'class' => 'application.controllers.function.AddParamFieldAction',
-            ),
-            'add_element_table' => array(
-                'class' => 'application.controllers.function.AddElementTableAction',
-            ),
+            'run_tests' => 'application.controllers.Function.Run_testsAction',
+            'polling_run_tests' => 'application.controllers.Function.Polling_run_testsAction',
+            'delete_tests' => 'application.controllers.Function.Delete_testsAction',
+            'add_param_field' => 'application.controllers.Function.AddParamFieldAction',
+            'add_element_table' => 'application.controllers.Function.AddElementTableAction',
 		);
 	}
 

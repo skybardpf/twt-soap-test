@@ -1,9 +1,9 @@
 <?php
 /**
- * @var $this               FunctionController
- * @var $data               array список SoapFunction
- * @var $service            SoapService
- * @var $runningFuncTests   array
+ * @var FunctionController $this
+ * @var SoapFunction[] $data
+ * @var SoapService $service
+ * @var array $runningFuncTests
  */
 ?>
 
@@ -12,10 +12,9 @@
 </script>
 
 <?php
-    Yii::app()->clientScript->registerScriptFile($this->getStaticAssets() . '/js/function/list.js');
+    Yii::app()->clientScript->registerScriptFile($this->getBaseAssets() . '/js/function/list.js');
 
     $this->breadcrumbs=array(
-        'Сервисы' => $this->createUrl('/service/list'),
         'Группы функций' => $this->createUrl('/group_functions/list', array('service_id' => $service->primaryKey)),
         'Функции'
     );

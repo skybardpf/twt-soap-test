@@ -9,7 +9,7 @@
  */
 class ServiceController extends Controller
 {
-    /**'
+    /**
      * @return array
      */
     public function actions()

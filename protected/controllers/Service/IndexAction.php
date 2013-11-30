@@ -14,22 +14,15 @@ class IndexAction extends CAction
          * @var ServiceController $controller
          */
         $controller = $this->controller;
-        $controller->pageTitle = Yii::app()->name . ' | SOAP сервисы';
+        $controller->pageTitle = Yii::app()->name . ' | '. Yii::t('app', 'Список SOAP сервисов');
 
-        $data = SoapService::getList();
-        $runningServiceTests = array();
-        foreach($data as $k=>$v){
-            $data[$k]['test_result_text'] = SoapTest::getTestResultByText($v['test_result'], $v['status']);
-            if ($v['has_running_tests']){
-                $runningServiceTests[] = $v['id'];
-            }
-        }
+//        $data = SoapService::getList();
+        $data = SoapService::model()->findAll();
 
         $this->controller->render(
             'index',
             array(
                 'data' => $data,
-                'runningServiceTests' => $runningServiceTests
             )
         );
 	}

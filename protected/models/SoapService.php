@@ -31,7 +31,7 @@ class SoapService extends CActiveRecord
      */
     public function tableName()
     {
-        return 'soap_service';
+        return 'service';
     }
 
     /**
