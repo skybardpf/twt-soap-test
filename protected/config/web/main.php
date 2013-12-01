@@ -9,7 +9,7 @@ return array(
     'defaultController' => 'service',
 
     // preloading 'log' component
-    'preload' => array('log'),
+    'preload' => array('log', 'bootstrap'),
 
     // autoloading model and component classes
     'import' => array(

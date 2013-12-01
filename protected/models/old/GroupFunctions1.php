@@ -18,8 +18,8 @@
  * @property $name          string
  * @property $service_id    int
  *
- * @property SoapService    $soapService
- * @property SoapFunction[]   $soapFunctions
+ * @property SoapService    $service
+ * @property SoapFunction[] $functions
  */
 
 class GroupFunctions extends CActiveRecord
@@ -51,8 +51,8 @@ class GroupFunctions extends CActiveRecord
     public function relations()
     {
         return array(
-            'soapFunctions' => array(self::HAS_MANY, 'SoapFunction', 'group_id'),
-			'soapService' => array(self::BELONGS_TO, 'SoapService', 'service_id'),
+            'functions' => array(self::HAS_MANY, 'SoapFunction', 'group_id'),
+			'service' => array(self::BELONGS_TO, 'SoapService', 'service_id'),
         );
     }
 
@@ -74,6 +74,8 @@ class GroupFunctions extends CActiveRecord
         return array(
             array('name', 'required'),
             array('name', 'unique'),
+
+            array('name', 'length', 'max'=>50),
         );
     }
 

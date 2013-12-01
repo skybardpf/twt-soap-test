@@ -9,9 +9,10 @@
  * @property string     $type           Тип функции CRUD
  * @property string     $description    Описание функции
  *
+ * Relations
  * @property SoapTest[]             $soapTests
  * @property GroupFunctions         $groupFunctions
- *
+ * @property SoapService            $service
  * @property SoapFunctionParam[]    $inputParams
  * @property SoapFunctionParam[]    $outputParams
  */
@@ -701,6 +702,7 @@ class SoapFunction extends CActiveRecord
 		return array(
 			'soapTests' => array(self::HAS_MANY, 'SoapTest', 'function_id'),
 			'groupFunctions' => array(self::BELONGS_TO, 'GroupFunctions', 'group_id'),
+			'service' => array(self::BELONGS_TO, 'SoapService', 'service_id'),
 
             'inputParams' => array(self::HAS_MANY, 'SoapFunctionParam', 'function_id', 'condition' => 'inputParams.input_param=1'),
             'outputParams' => array(self::HAS_MANY, 'SoapFunctionParam', 'function_id', 'condition' => 'outputParams.input_param=0'),

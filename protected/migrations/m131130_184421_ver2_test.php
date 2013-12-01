@@ -68,6 +68,30 @@ class m131130_184421_ver2_test extends CDbMigration
               ON DELETE NO ACTION
               ON UPDATE NO ACTION;
         ");
+
+        $this->execute("
+            ALTER TABLE `function_test`
+            ADD COLUMN `service_id` INT(11) UNSIGNED NOT NULL  AFTER `function_id` ;
+        ");
+
+        $this->execute("
+            UPDATE function_test t, `function` f SET t.service_id=f.service_id
+            WHERE f.id=t.function_id
+        ");
+
+        $this->execute("
+            ALTER TABLE `function_test`
+            ADD INDEX `service` (`service_id` ASC) ;
+        ");
+
+        $this->execute("
+            ALTER TABLE `function_test`
+              ADD CONSTRAINT `fk_function_test_2`
+              FOREIGN KEY (`service_id` )
+              REFERENCES `twt_soap_test`.`service` (`id` )
+              ON DELETE NO ACTION
+              ON UPDATE NO ACTION;
+          ");
 	}
 
 	public function down()
